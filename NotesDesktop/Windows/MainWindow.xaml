@@ -34,7 +34,7 @@
 			</TabControl.ItemContainerStyle>
 			<TabControl.ContentTemplate>
 				<DataTemplate>
-					<ListView ItemsSource="{Binding Notes}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+					<ListView ItemsSource="{Binding Notes}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False">
 						<ListView.ItemTemplate>
 							<DataTemplate>
 								<TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" Background="{Binding Brush}"/>
@@ -53,20 +53,20 @@
 		<TextBox x:Name="SearchBox" HorizontalAlignment="Stretch" Margin="10,10,10,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="Auto" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" TextChanged="SearchTextChanged"/>
 		<Button Content="Add category" HorizontalAlignment="Left" Margin="10,0,0,40" VerticalAlignment="Bottom" Height="25" Click="AddCategoryClick" Width="110"/>
 		<Button Content="Remove category" HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Height="25" Click="RemoveCategoryClick" Width="110"/>
-		<Button Content="🡑" HorizontalAlignment="Left" Margin="125,0,0,40" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryUpClick" Width="25" VerticalContentAlignment="Center"/>
-		<Button Content="🡓" HorizontalAlignment="Left" Margin="125,0,0,10" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryDownClick" Width="25" VerticalContentAlignment="Center"/>
+        <RepeatButton Content="🡑" HorizontalAlignment="Left" Margin="125,0,0,40" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryUpClick" Width="25" VerticalContentAlignment="Center"/>
+        <RepeatButton Content="🡓" HorizontalAlignment="Left" Margin="125,0,0,10" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryDownClick" Width="25" VerticalContentAlignment="Center"/>
 		<Button Content="⮅" HorizontalAlignment="Left" Margin="155,0,0,40" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryTopClick" Width="25" VerticalContentAlignment="Center"/>
 		<Button Content="⮇" HorizontalAlignment="Left" Margin="155,0,0,10" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryBottomClick" Width="25" VerticalContentAlignment="Center"/>
 		<Label x:Name="NotesInCategory" HorizontalAlignment="Left" Margin="185,0,0,40" VerticalAlignment="Bottom" Height="25" Width="120"/>
 		<Button Content="Add note" HorizontalAlignment="Right" Margin="0,0,195,40" VerticalAlignment="Bottom" Height="25" Click="AddNoteClick" Width="110"/>
 		<Button Content="Remove note" HorizontalAlignment="Right" Margin="0,0,310,10" VerticalAlignment="Bottom" Height="25" Click="RemoveNoteClick" Width="110"/>
-		<Button Content="🡑" HorizontalAlignment="Right" Margin="0,0,165,40" VerticalAlignment="Bottom" Height="25" Click="MoveNoteUpClick" Width="25" VerticalContentAlignment="Center"/>
-		<Button Content="🡓" HorizontalAlignment="Right" Margin="0,0,165,10" VerticalAlignment="Bottom" Height="25" Click="MoveNoteDownClick" Width="25" VerticalContentAlignment="Center"/>
+		<RepeatButton Content="🡑" HorizontalAlignment="Right" Margin="0,0,165,40" VerticalAlignment="Bottom" Height="25" Click="MoveNoteUpClick" Width="25" VerticalContentAlignment="Center"/>
+        <RepeatButton Content="🡓" HorizontalAlignment="Right" Margin="0,0,165,10" VerticalAlignment="Bottom" Height="25" Click="MoveNoteDownClick" Width="25" VerticalContentAlignment="Center"/>
 		<Button Content="⮅" HorizontalAlignment="Right" Margin="0,0,135,40" VerticalAlignment="Bottom" Height="25" Click="MoveNoteTopClick" Width="25" VerticalContentAlignment="Center"/>
 		<Button Content="⮇" HorizontalAlignment="Right" Margin="0,0,135,10" VerticalAlignment="Bottom" Height="25" Click="MoveNoteBottomClick" Width="25" VerticalContentAlignment="Center"/>
 		<Label x:Name="SelectedID" Content="" HorizontalAlignment="Right" Margin="0,0,10,40" VerticalAlignment="Bottom" Height="25" Width="50" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
 		<TextBox Text="{Binding SelectedItem.Name, ElementName=TabControl, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" Margin="185,0,0,10" TextWrapping="NoWrap" VerticalAlignment="Bottom" Width="120" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" MaxLines="1" MaxLength="18"/>
-		<Button Content="Move to" HorizontalAlignment="Right" Margin="0,0,70,40" VerticalAlignment="Bottom" Height="25" Width="60" Click="ChangeNoteCategoryClick"/>
+		<Button x:Name="MoveToButton" Content="Move to" HorizontalAlignment="Right" Margin="0,0,70,40" VerticalAlignment="Bottom" Height="25" Width="60" Click="ChangeNoteCategoryClick"/>
 		<ComboBox x:Name="MoveDestination" ItemsSource="{Binding Categories}" DisplayMemberPath="Name" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="120" Height="25"/>
 		<Button x:Name="CategoryColor" Content="" HorizontalAlignment="Left" Margin="310,0,0,10" VerticalAlignment="Bottom" Height="25" Width="25" Click="CategoryColorClick"/>
 		<Button x:Name="NoteColor" Content="" HorizontalAlignment="Right" Margin="0,0,310,40" VerticalAlignment="Bottom" Height="25" Width="25" Click="NoteColorClick"/>
