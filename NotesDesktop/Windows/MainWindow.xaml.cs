@@ -1,5 +1,6 @@
 ﻿using Notes;
 using Notes.Entities;
+using NotesDesktop.Utils;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -7,8 +8,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace NotesDesktop
-{
+namespace NotesDesktop;
+
 	public partial class MainWindow : Window
 	{
 		private NoteManager NoteManager { get; set; }
@@ -348,12 +349,12 @@ namespace NotesDesktop
 
 		private void SetCategoryColor()
 		{
-			CategoryColor.Background = SelectedCategory?.Brush;
+		CategoryColor.Background = WpfUtils.ToBrush(SelectedCategory?.Color);
 		}
 
 		private void SetNoteColor()
 		{
-			NoteColor.Background = SelectedNote?.Brush;
+		NoteColor.Background = WpfUtils.ToBrush(SelectedNote?.Color);
 		}
 	}
 }

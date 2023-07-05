@@ -1,11 +1,11 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotesDesktop", "NotesDesktop\NotesDesktop.csproj", "{574C9EC8-33E6-4501-BAF6-EA2277F7F399}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotesDesktop", "NotesDesktop\NotesDesktop.csproj", "{574C9EC8-33E6-4501-BAF6-EA2277F7F399}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notes", "Notes\Notes.csproj", "{EB01C2BF-0F89-4658-B251-03C61544849C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notes", "Notes\Notes.csproj", "{EB01C2BF-0F89-4658-B251-03C61544849C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

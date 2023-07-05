@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Notes
-{
+namespace Notes;
+
 	public class NoteManager
 	{
 		private readonly ArchiveManager Archive;
@@ -196,5 +196,3 @@ namespace Notes
 				MaxCategoryID = Categories.Max(cat => cat.ID);
 			}
 		}
-	}
-}
