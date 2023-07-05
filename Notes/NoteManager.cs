@@ -66,9 +66,15 @@ namespace Notes;
 		public IEnumerable<Category> Find(string query, bool ignoreCase = false)
 		{
 			return Categories
-				.ToDictionary(k => k.Name, v => v.Notes.FindAll(note => note.Text.IndexOf(query, ignoreCase ? StringComparison.InvariantCultureIgnoreCase : default) >= 0))
-				.Where(cat => cat.Value.Count > 0)
-				.Select(i => new Category() { Name = i.Key, Notes = i.Value });
+			.ToDictionary(k => k.ID, v => v)
+			.Select(i => new Category()
+			{
+				ID = i.Key,
+				Color = i.Value.Color,
+				Name = i.Value.Name,
+				Notes = i.Value.Notes.FindAll(note => note.Text.IndexOf(query, ignoreCase ? StringComparison.InvariantCultureIgnoreCase : default) >= 0)
+			})
+			.Where(cat => cat.Notes.Count > 0);
 		}
 
 		public IEnumerable<Note> FindInCategory(long categoryID, string query)
@@ -80,12 +86,24 @@ namespace Notes;
 
 		public bool DeleteCategory(long categoryID)
 		{
-			return CategoriesDictionary.TryGetValue(categoryID, out var category) && Categories.Remove(category);
+		if (!CategoriesDictionary.TryGetValue(categoryID, out var category) || !Categories.Remove(category))
+			return false;
+
+		if (categoryID == MaxCategoryID)
+			SetMaxCategoryID();
+
+		return true;
 		}
 
 		public bool DeleteNote(Note note, long categoryID)
 		{
-			return CategoriesDictionary.TryGetValue(categoryID, out var category) && category.Notes.Remove(note);
+		if (!CategoriesDictionary.TryGetValue(categoryID, out var category) || !category.Notes.Remove(note))
+			return false;
+
+		if (note.ID == MaxNoteID)
+			SetMaxNoteID();
+
+		return true;
 		}
 
 		public bool MoveNote(Note note, long oldCategoryID, long newCategoryID)
@@ -192,7 +210,18 @@ namespace Notes;
 			{
 				Categories = json;
 				CategoriesDictionary = Categories.ToDictionary(k => k.ID, v => v);
+			SetMaxNoteID();
+			SetMaxCategoryID();
+		}
+	}
+
+	private void SetMaxNoteID()
+	{
 				MaxNoteID = Categories.SelectMany(cat => cat.Notes).Max(note => note.ID);
+	}
+
+	private void SetMaxCategoryID()
+	{
 				MaxCategoryID = Categories.Max(cat => cat.ID);
 			}
 		}
