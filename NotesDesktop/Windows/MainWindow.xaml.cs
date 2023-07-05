@@ -28,34 +28,33 @@ namespace NotesDesktop;
 
 			InitializeComponent();
 
-			SetCategoryColor();
 			SetTitle();
 		}
 
 
 		private void WindowClosing(object sender, CancelEventArgs e)
 		{
-			NoteManager.Save(Categories);
+		Save(false);
 		}
 
 		private void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			if (e.Source is TabControl)
-			{
-				var selectedItem = (Category)TabControl.SelectedItem;
-				SelectedCategory = selectedItem == null ? null : IsSearch ? Categories.First(cat => cat.ID == selectedItem.ID) : selectedItem;
+		if (!(e.Source is TabControl))
+			return;
+
+		SelectedCategory = (Category)TabControl.SelectedItem;
 				UnselectNote();
-				NoteManager.Save(Categories);
+		Save();
 				SetCategoryNoteCount();
 				SetCategoryColor();
 			}
-		}
 
 		private void SelectNote(object sender, KeyboardFocusChangedEventArgs e)
 		{
 			var item = (ListViewItem)sender;
 			SelectedNote = (Note)item.Content;
 			SelectedID.Content = SelectedNote.ID;
+		MoveToButton.IsEnabled = SelectedNote != null;
 			SetNoteColor();
 		}
 
@@ -63,6 +62,7 @@ namespace NotesDesktop;
 		{
 			SelectedNote = null;
 			SelectedID.Content = string.Empty;
+		MoveToButton.IsEnabled = false;
 			SetNoteColor();
 		}
 
@@ -127,7 +127,7 @@ namespace NotesDesktop;
 			if (selectedIndex <= 0 || IsSearch)
 				return;
 
-			Categories.Remove(SelectedCategory);
+		Categories.RemoveAt(selectedIndex);
 			Categories.Insert(selectedIndex - 1, SelectedCategory);
 			TabControl.Items.Refresh();
 			MoveDestination.Items.Refresh();
@@ -139,7 +139,7 @@ namespace NotesDesktop;
 			if (selectedIndex == -1 || selectedIndex >= TabControl.Items.Count - 1 || IsSearch)
 				return;
 
-			Categories.Remove(SelectedCategory);
+		Categories.RemoveAt(selectedIndex);
 			Categories.Insert(selectedIndex + 1, SelectedCategory);
 			TabControl.Items.Refresh();
 			MoveDestination.Items.Refresh();
@@ -151,7 +151,7 @@ namespace NotesDesktop;
 			if (selectedIndex <= 0 || IsSearch)
 				return;
 
-			Categories.Remove(SelectedCategory);
+		Categories.RemoveAt(selectedIndex);
 			Categories.Insert(0, SelectedCategory);
 			TabControl.Items.Refresh();
 			MoveDestination.Items.Refresh();
@@ -163,7 +163,7 @@ namespace NotesDesktop;
 			if (selectedIndex == -1 || selectedIndex >= TabControl.Items.Count - 1 || IsSearch)
 				return;
 
-			Categories.Remove(SelectedCategory);
+		Categories.RemoveAt(selectedIndex);
 			Categories.Insert(TabControl.Items.Count, SelectedCategory);
 			TabControl.Items.Refresh();
 			MoveDestination.Items.Refresh();
@@ -237,7 +237,7 @@ namespace NotesDesktop;
 			if (selectedIndex <= 0)
 				return;
 
-			SelectedCategory.Notes.Remove(SelectedNote);
+		SelectedCategory.Notes.RemoveAt(selectedIndex);
 			SelectedCategory.Notes.Insert(selectedIndex - 1, SelectedNote);
 			TabControl.Items.Refresh();
 		}
@@ -251,7 +251,7 @@ namespace NotesDesktop;
 			if (selectedIndex >= SelectedCategory.Notes.Count - 1)
 				return;
 
-			SelectedCategory.Notes.Remove(SelectedNote);
+		SelectedCategory.Notes.RemoveAt(selectedIndex);
 			SelectedCategory.Notes.Insert(selectedIndex + 1, SelectedNote);
 			TabControl.Items.Refresh();
 		}
@@ -265,7 +265,7 @@ namespace NotesDesktop;
 			if (selectedIndex <= 0)
 				return;
 
-			SelectedCategory.Notes.Remove(SelectedNote);
+		SelectedCategory.Notes.RemoveAt(selectedIndex);
 			SelectedCategory.Notes.Insert(0, SelectedNote);
 			TabControl.Items.Refresh();
 		}
@@ -279,7 +279,7 @@ namespace NotesDesktop;
 			if (selectedIndex >= SelectedCategory.Notes.Count - 1)
 				return;
 
-			SelectedCategory.Notes.Remove(SelectedNote);
+		SelectedCategory.Notes.RemoveAt(selectedIndex);
 			SelectedCategory.Notes.Insert(SelectedCategory.Notes.Count, SelectedNote);
 			TabControl.Items.Refresh();
 		}
@@ -356,5 +356,9 @@ namespace NotesDesktop;
 		{
 		NoteColor.Background = WpfUtils.ToBrush(SelectedNote?.Color);
 		}
+
+	private void Save()
+	{
+		NoteManager.Save();
 	}
 }
