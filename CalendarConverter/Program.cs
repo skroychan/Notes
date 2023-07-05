@@ -21,7 +21,10 @@ namespace CalendarConverter
 				{
 					try
 					{
-						notes = GetNotes(path);
+						Console.Write("Enter min date: ");
+
+						var date = DateTime.Parse(Console.ReadLine());
+						notes = GetNotes(path, date);
 						break;
 					}
 					catch (FormatException)
@@ -51,7 +54,7 @@ namespace CalendarConverter
 		}
 
 
-		private static List<Note> GetNotes(string path)
+		private static List<Note> GetNotes(string path, DateTime date)
 		{
 			var result = new List<Note>();
 			using (var connection = new SQLiteConnection($"Data Source={path}"))
@@ -59,7 +62,7 @@ namespace CalendarConverter
 				connection.Open();
 
 				var command = connection.CreateCommand();
-				command.CommandText = @"select _id, title from Events";
+				command.CommandText = @"select _id, title from Events where dtstart > " + ((DateTimeOffset)date).ToUnixTimeMilliseconds();
 
 				using (var reader = command.ExecuteReader())
 				{
