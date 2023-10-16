@@ -19,7 +19,7 @@ public partial class MainWindow : Window
 
 	private CategoryModel SelectedCategory { get; set; }
 	private NoteModel SelectedNote { get; set; }
-	private Timer Timer { get; set; }
+	private Timer SaveTimer { get; set; }
 
 	public List<CategoryModel> Categories { get; set; }
 
@@ -32,9 +32,9 @@ public partial class MainWindow : Window
 
 		InitializeComponent();
 
-		Timer = new Timer(5000);
-		Timer.Stop();
-        Timer.Elapsed += (_, _) => NoteController.Save();
+		SaveTimer = new Timer(5000);
+		SaveTimer.Stop();
+        SaveTimer.Elapsed += (_, _) => NoteController.Save();
 
         SetTitle();
 	}
@@ -226,7 +226,7 @@ public partial class MainWindow : Window
 
     private void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!(e.Source is TabControl))
+        if (e.OriginalSource != TabControl)
             return;
 
         SelectedCategory = (CategoryModel)TabControl.SelectedItem;
@@ -273,7 +273,7 @@ public partial class MainWindow : Window
         Save(true);
     }
 
-    private void NoteSelected(object sender, KeyboardFocusChangedEventArgs e)
+    private void NoteSelected(object sender, MouseEventArgs e)
     {
         var item = (ListViewItem)sender;
         SelectNote((NoteModel)item.Content);
@@ -294,6 +294,7 @@ public partial class MainWindow : Window
 	{
 		SelectedNote = null;
 		SelectedID.Content = string.Empty;
+        LastModified.Content = string.Empty;
         ChangeNoteCategory.IsEnabled = false;
 		SetNoteColor();
 	}
@@ -326,7 +327,7 @@ public partial class MainWindow : Window
 		if (info.Any())
 			tooltip = string.Join('\n', info);
 
-        LastModified.Content = SelectedNote.CreationDate.ToString() ?? SelectedNote.ModificationDate.ToString() ?? "";
+        LastModified.Content = (SelectedNote.CreationDate ?? SelectedNote.ModificationDate).ToString() ?? "";
         LastModified.ToolTip = tooltip;
     }
 
@@ -429,8 +430,8 @@ public partial class MainWindow : Window
 			return;
 		}
 
-		Timer.Stop();
-		Timer.Start();		
+		SaveTimer.Stop();
+		SaveTimer.Start();		
     }
 
 	private SolidColorBrush ToBrush(System.Drawing.Color color)

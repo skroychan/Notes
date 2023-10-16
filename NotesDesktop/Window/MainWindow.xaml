@@ -38,7 +38,7 @@
 			</TabControl.ItemContainerStyle>
 			<TabControl.ContentTemplate>
 				<DataTemplate>
-					<ListView ItemsSource="{Binding Notes}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False">
+					<ListView ItemsSource="{Binding Notes}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" SelectionMode="Single">
 						<ListView.ItemTemplate>
 							<DataTemplate>
 								<TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True">
@@ -48,11 +48,6 @@
 								</TextBox>
 							</DataTemplate>
 						</ListView.ItemTemplate>
-						<ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <EventSetter Event="PreviewGotKeyboardFocus" Handler="NoteSelected"/>
-                            </Style>
-                        </ListView.ItemContainerStyle>
 					</ListView>
 				</DataTemplate>
 			</TabControl.ContentTemplate>
@@ -60,29 +55,32 @@
                 <Style TargetType="TextBox">
                     <EventSetter Event="TextChanged" Handler="NoteTextChanged"/>
                 </Style>
+				<Style TargetType="ListViewItem">
+					<EventSetter Event="PreviewMouseUp" Handler="NoteSelected"/>
+				</Style>
             </TabControl.Resources>
 		</TabControl>
 		<TextBox x:Name="SearchBox" HorizontalAlignment="Stretch" Margin="10,10,10,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="Auto" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" TextChanged="SearchTextChanged"/>
-		<Button x:Name="AddCategory" Content="Add category" HorizontalAlignment="Left" Margin="10,0,0,40" VerticalAlignment="Bottom" Height="25" Click="AddCategoryClick" Width="110"/>
-		<Button x:Name="RemoveCategory" Content="Remove category" HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Height="25" Click="RemoveCategoryClick" Width="110"/>
-        <RepeatButton x:Name="MoveCategoryUp" Content="🡑" HorizontalAlignment="Left" Margin="125,0,0,40" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryUpClick" Width="25" VerticalContentAlignment="Center"/>
-        <RepeatButton x:Name="MoveCategoryDown" Content="🡓" HorizontalAlignment="Left" Margin="125,0,0,10" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryDownClick" Width="25" VerticalContentAlignment="Center"/>
-		<Button x:Name="MoveCategoryTop" Content="⮅" HorizontalAlignment="Left" Margin="155,0,0,40" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryTopClick" Width="25" VerticalContentAlignment="Center"/>
-		<Button x:Name="MoveCategoryBottom" Content="⮇" HorizontalAlignment="Left" Margin="155,0,0,10" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryBottomClick" Width="25" VerticalContentAlignment="Center"/>
-		<Label x:Name="NotesInCategory" HorizontalAlignment="Left" Margin="185,0,0,40" VerticalAlignment="Bottom" Height="25" Width="120"/>
-		<Button x:Name="AddNote" Content="Add note" HorizontalAlignment="Right" Margin="0,0,195,40" VerticalAlignment="Bottom" Height="25" Click="AddNoteClick" Width="110"/>
-		<Button x:Name="RemoveNote" Content="Remove note" HorizontalAlignment="Right" Margin="0,0,310,10" VerticalAlignment="Bottom" Height="25" Click="RemoveNoteClick" Width="110"/>
-		<RepeatButton x:Name="MoveNoteUp" Content="🡑" HorizontalAlignment="Right" Margin="0,0,165,40" VerticalAlignment="Bottom" Height="25" Click="MoveNoteUpClick" Width="25" VerticalContentAlignment="Center"/>
-        <RepeatButton x:Name="MoveNoteDown" Content="🡓" HorizontalAlignment="Right" Margin="0,0,165,10" VerticalAlignment="Bottom" Height="25" Click="MoveNoteDownClick" Width="25" VerticalContentAlignment="Center"/>
-		<Button x:Name="MoveNoteTop" Content="⮅" HorizontalAlignment="Right" Margin="0,0,135,40" VerticalAlignment="Bottom" Height="25" Click="MoveNoteTopClick" Width="25" VerticalContentAlignment="Center"/>
-		<Button x:Name="MoveNoteBottom" Content="⮇" HorizontalAlignment="Right" Margin="0,0,135,10" VerticalAlignment="Bottom" Height="25" Click="MoveNoteBottomClick" Width="25" VerticalContentAlignment="Center"/>
-        <Label x:Name="SelectedID" Content="" HorizontalAlignment="Right" Margin="0,0,75,40" VerticalAlignment="Bottom" Height="25" Width="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <TextBox Text="{Binding SelectedItem.Name, ElementName=TabControl, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" Margin="185,0,0,10" TextWrapping="NoWrap" VerticalAlignment="Bottom" Width="120" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" MaxLines="1" MaxLength="18" TextChanged="CategoryNameChanged"/>
-		<Button x:Name="ChangeNoteCategory" Content="Move to" HorizontalAlignment="Right" Margin="0,0,10,40" VerticalAlignment="Bottom" Height="25" Width="60" Click="ChangeNoteCategoryClick"/>
-		<ComboBox x:Name="MoveDestination" ItemsSource="{Binding Categories}" DisplayMemberPath="Name" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="120" Height="25"/>
-		<Button x:Name="CategoryColor" Content="" HorizontalAlignment="Left" Margin="310,0,0,10" VerticalAlignment="Bottom" Height="25" Width="25" Click="CategoryColorClick"/>
-		<Button x:Name="NoteColor" Content="" HorizontalAlignment="Right" Margin="0,0,425,10" VerticalAlignment="Bottom" Height="25" Width="25" Click="NoteColorClick"/>
-		<Button x:Name="ArchiveNote" Content="Archive note" HorizontalAlignment="Right" Margin="0,0,195,10" VerticalAlignment="Bottom" Height="25" Click="ArchiveNoteClick" Width="110"/>
-        <Label x:Name="LastModified" Content="" HorizontalAlignment="Right" Margin="0,0,305,40" VerticalAlignment="Bottom" Height="25" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+		<Button x:Name="AddCategory" Content="+" HorizontalAlignment="Left" Margin="10,0,0,40" VerticalAlignment="Bottom" Height="25" Click="AddCategoryClick" Width="25" ToolTip="New category"/>
+		<Button x:Name="RemoveCategory" Content="🗑" HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Height="25" Click="RemoveCategoryClick" Width="25" ToolTip="Remove category"/>
+		<RepeatButton x:Name="MoveCategoryUp" Content="🡑" HorizontalAlignment="Left" Margin="40,0,0,40" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryUpClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move up"/>
+		<RepeatButton x:Name="MoveCategoryDown" Content="🡓" HorizontalAlignment="Left" Margin="40,0,0,10" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryDownClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move down"/>
+		<Button x:Name="MoveCategoryTop" Content="⮅" HorizontalAlignment="Left" Margin="70,0,0,40" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryTopClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move to the top"/>
+		<Button x:Name="MoveCategoryBottom" Content="⮇" HorizontalAlignment="Left" Margin="70,0,0,10" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryBottomClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move to the bottom"/>
+		<Label x:Name="NotesInCategory" HorizontalAlignment="Left" Margin="100,0,0,40" VerticalAlignment="Bottom" Height="25" Width="120"/>
+		<TextBox Text="{Binding SelectedItem.Name, ElementName=TabControl, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" Margin="100,0,0,10" TextWrapping="NoWrap" VerticalAlignment="Bottom" Width="120" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" MaxLines="1" MaxLength="18" TextChanged="CategoryNameChanged"/>
+		<Button x:Name="CategoryColor" Content="" HorizontalAlignment="Left" Margin="225,0,0,10" VerticalAlignment="Bottom" Height="25" Width="25" Click="CategoryColorClick" ToolTip="Color"/>
+		<Button x:Name="MoveNoteTop" Content="⮅" HorizontalAlignment="Right" Margin="0,0,10,40" VerticalAlignment="Bottom" Height="25" Click="MoveNoteTopClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move to the top"/>
+		<Button x:Name="MoveNoteBottom" Content="⮇" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Height="25" Click="MoveNoteBottomClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move to the bottom"/>
+		<RepeatButton x:Name="MoveNoteUp" Content="🡑" HorizontalAlignment="Right" Margin="0,0,40,40" VerticalAlignment="Bottom" Height="25" Click="MoveNoteUpClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move up"/>
+		<RepeatButton x:Name="MoveNoteDown" Content="🡓" HorizontalAlignment="Right" Margin="0,0,40,10" VerticalAlignment="Bottom" Height="25" Click="MoveNoteDownClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move down"/>
+		<Button x:Name="AddNote" Content="+" HorizontalAlignment="Right" Margin="0,0,70,40" VerticalAlignment="Bottom" Height="25" Click="AddNoteClick" Width="25" ToolTip="New note"/>
+		<Button x:Name="ArchiveNote" Content="📁" HorizontalAlignment="Right" Margin="0,0,70,10" VerticalAlignment="Bottom" Height="25" Click="ArchiveNoteClick" Width="25" ToolTip="Archive note"/>
+		<Button x:Name="RemoveNote" Content="🗑" HorizontalAlignment="Right" Margin="0,0,100,10" VerticalAlignment="Bottom" Height="25" Click="RemoveNoteClick" Width="25" ToolTip="Remove note"/>
+		<ComboBox x:Name="MoveDestination" ItemsSource="{Binding Categories}" DisplayMemberPath="Name" HorizontalAlignment="Right" Margin="0,0,100,40" VerticalAlignment="Bottom" Width="125" Height="25"/>
+		<Button x:Name="ChangeNoteCategory" Content="→" HorizontalAlignment="Right" Margin="0,0,230,40" VerticalAlignment="Bottom" Height="25" Width="25" Click="ChangeNoteCategoryClick" ToolTip="Move to another category"/>
+		<Button x:Name="NoteColor" Content="" HorizontalAlignment="Right" Margin="0,0,130,10" VerticalAlignment="Bottom" Height="25" Width="25" Click="NoteColorClick" ToolTip="Color"/>
+		<Label x:Name="SelectedID" Content="" HorizontalAlignment="Right" Margin="0,0,260,40" VerticalAlignment="Bottom" Height="25" Width="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+		<Label x:Name="LastModified" Content="" HorizontalAlignment="Right" Margin="0,0,160,10" VerticalAlignment="Bottom" Height="25" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
 	</Grid>
 </Window>
