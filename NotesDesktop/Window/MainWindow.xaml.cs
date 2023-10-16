@@ -196,8 +196,8 @@ public partial class MainWindow : Window
         var colorDialog = new System.Windows.Forms.ColorDialog();
         if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
-            SelectedNote.Brush = ToBrush(colorDialog.Color);
-            NoteController.UpdateNoteColor(SelectedNote.Id, WpfUtils.ToHexString(SelectedNote.Brush));
+            SelectedNote.Color = colorDialog.Color.ToString();
+            NoteController.UpdateNoteColor(SelectedNote.Id, SelectedNote.Color);
             SetNoteColor();
             RefreshNotes();
         }
@@ -208,8 +208,8 @@ public partial class MainWindow : Window
         var colorDialog = new System.Windows.Forms.ColorDialog();
         if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
-            SelectedCategory.Brush = ToBrush(colorDialog.Color);
-            NoteController.UpdateCategoryColor(SelectedCategory.Id, WpfUtils.ToHexString(SelectedCategory.Brush));
+            SelectedCategory.Color = colorDialog.Color.ToString();
+            NoteController.UpdateCategoryColor(SelectedCategory.Id, SelectedCategory.Color);
             SetCategoryColor();
             RefreshCategories();
         }
@@ -362,12 +362,16 @@ public partial class MainWindow : Window
 
 	private void SetCategoryColor()
 	{
-		CategoryColor.Background = SelectedCategory?.Brush;
+		CategoryColor.Background = WpfUtils.ToBrush(SelectedCategory?.Color);
+        if (CategoryColor.Background != null)
+            CategoryColor.Background.Opacity = 0.3;
 	}
 
 	private void SetNoteColor()
 	{
-		NoteColor.Background = SelectedNote?.Brush;
+		NoteColor.Background = WpfUtils.ToBrush(SelectedNote?.Color);
+        if (NoteColor.Background != null)
+			NoteColor.Background.Opacity = 0.3;
 	}
 
 	private void UpdateCategories()

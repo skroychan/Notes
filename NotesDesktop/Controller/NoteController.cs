@@ -1,7 +1,6 @@
 ﻿using Notes.Entity;
 using Notes.Service;
 using NotesDesktop.Model;
-using NotesDesktop.Util;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -100,28 +99,21 @@ public class NoteController
 
     private CategoryModel ToModel(Category category)
     {
-        var brush = WpfUtils.ToBrush(category.Color);
-        if (brush != null)
-            brush.Opacity = 0.3;
-        else
-            brush = SystemColors.ControlBrush;
+        if (category.Color == null)
+            category.Color = SystemColors.ControlBrush.ToString();
 
         return new CategoryModel
         {
             Id = category.Id,
             Name = category.Name,
             CreationDate = category.CreationDate,
-            Brush = brush,
+            Color = category.Color,
             Notes = category.Notes.Select(ToModel).ToList()
         };
     }
 
     private NoteModel ToModel(Note note)
     {
-        var brush = WpfUtils.ToBrush(note.Color);
-        if (brush != null)
-            brush.Opacity = 0.3;
-
         return new NoteModel
         {
             Id = note.Id,
@@ -129,7 +121,7 @@ public class NoteController
             CreationDate = note.CreationDate,
             ModificationDate = note.ModificationDate,
             ArchiveDate = note.ArchiveDate,
-            Brush = brush
+            Color = note.Color
         };
     }
 }

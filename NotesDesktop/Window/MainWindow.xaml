@@ -29,7 +29,11 @@
 			</TabControl.ItemTemplate>
 			<TabControl.ItemContainerStyle>
 				<Style TargetType="TabItem">
-					<Setter Property="Background" Value="{Binding Brush}" />
+					<Setter Property="Background">
+						<Setter.Value>
+							<SolidColorBrush Color="{Binding Color}" Opacity="0.3"/>
+						</Setter.Value>
+					</Setter>
 				</Style>
 			</TabControl.ItemContainerStyle>
 			<TabControl.ContentTemplate>
@@ -37,7 +41,11 @@
 					<ListView ItemsSource="{Binding Notes}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False">
 						<ListView.ItemTemplate>
 							<DataTemplate>
-								<TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" Background="{Binding Brush}"/>
+								<TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True">
+									<TextBox.Background>
+										<SolidColorBrush Color="{Binding Color}" Opacity="0.3"/>
+									</TextBox.Background>
+								</TextBox>
 							</DataTemplate>
 						</ListView.ItemTemplate>
 						<ListView.ItemContainerStyle>
