@@ -120,10 +120,10 @@ public partial class MainWindow : Window
         if (SelectedNote == null || SelectedCategory == null)
             return;
 
-        if (!string.IsNullOrEmpty(SelectedNote.Text))
+        var truncated = SelectedNote.Text.Truncate(60);
+        if (!string.IsNullOrEmpty(truncated))
         {
-            var truncated = SelectedNote.Text.Length > 60 ? SelectedNote.Text[..60] + "..." : SelectedNote.Text;
-            var result = MessageBox.Show($"Are you sure you want to delete '{truncated}'?", "Confirm deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = MessageBox.Show($"Are you sure you want to permanently delete '{truncated}'?", "Confirm deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (result != MessageBoxResult.Yes)
                 return;
         }
@@ -136,28 +136,33 @@ public partial class MainWindow : Window
         UpdateNotes();
     }
 
-    private void ArchiveNoteClick(object sender, RoutedEventArgs e)
-    {
-        if (SelectedNote == null || SelectedCategory == null)
-            return;
+	private void ArchiveNoteClick(object sender, RoutedEventArgs e)
+	{
+		var truncated = SelectedNote.Text.Truncate(60);
+		if (!string.IsNullOrEmpty(truncated))
+		{
+			var result = MessageBox.Show($"Are you sure you want to archive '{truncated}'?", "Confirm archival", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+			if (result != MessageBoxResult.Yes)
+				return;
+		}
 
-        if (!string.IsNullOrEmpty(SelectedNote.Text))
-        {
-            var truncated = SelectedNote.Text.Length > 60 ? SelectedNote.Text[..60] + "..." : SelectedNote.Text;
-            var result = MessageBox.Show($"Are you sure you want to archive '{truncated}'?", "Confirm archival", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes)
-                return;
-        }
+        ChangeNoteStorage(NoteStorage.Archive);
+	}
 
-        if (!controller.ArchiveNote(SelectedNote.Id))
-            return;
+	private void UnarchiveNoteClick(object sender, RoutedEventArgs e)
+	{
+		var truncated = SelectedNote.Text.Truncate(60);
+		if (!string.IsNullOrEmpty(truncated))
+		{
+			var result = MessageBox.Show($"Are you sure you want to restore '{truncated}'?", "Confirm unarchival", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+			if (result != MessageBoxResult.Yes)
+				return;
+		}
 
-        SelectedCategory.Notes.Remove(SelectedNote);
-        UnselectNote();
-        UpdateNotes();
-    }
+		ChangeNoteStorage(NoteStorage.Main);
+	}
 
-    private void MoveNoteUpClick(object sender, RoutedEventArgs e)
+	private void MoveNoteUpClick(object sender, RoutedEventArgs e)
     {
         MoveNote(SelectedCategory.Notes.IndexOf(SelectedNote) - 1);
     }
@@ -215,6 +220,26 @@ public partial class MainWindow : Window
             RefreshCategories();
         }
     }
+
+	private void MainModeClick(object sender, RoutedEventArgs e)
+	{
+        MainMode.Visibility = Visibility.Hidden;
+        ArchiveMode.Visibility = Visibility.Visible;
+        UnarchiveNote.Visibility = Visibility.Hidden;
+        ArchiveNote.Visibility = Visibility.Visible;
+
+        ChangeStorage(NoteStorage.Main);
+	}
+
+	private void ArchiveModeClick(object sender, RoutedEventArgs e)
+	{
+		MainMode.Visibility = Visibility.Visible;
+		ArchiveMode.Visibility = Visibility.Hidden;
+		UnarchiveNote.Visibility = Visibility.Visible;
+		ArchiveNote.Visibility = Visibility.Hidden;
+
+		ChangeStorage(NoteStorage.Archive);
+	}
 
 	#endregion
 
@@ -360,7 +385,27 @@ public partial class MainWindow : Window
         SelectedCategory.Notes.Remove(SelectedNote);
         SelectedCategory.Notes.Insert(newPosition, SelectedNote);
 		RefreshNotes();
-    }
+	}
+
+	private void ChangeNoteStorage(NoteStorage targetStorage)
+	{
+		if (SelectedNote == null || SelectedCategory == null)
+			return;
+
+		if (!controller.ChangeNoteStorage(SelectedNote.Id, targetStorage))
+			return;
+
+		SelectedCategory.Notes.Remove(SelectedNote);
+		UnselectNote();
+		UpdateNotes();
+	}
+
+	private void ChangeStorage(NoteStorage targetStorage)
+	{
+        controller.SetStorage(targetStorage);
+
+		Reload();
+	}
 
 	private void SetCategoryColor()
 	{
@@ -386,7 +431,7 @@ public partial class MainWindow : Window
 
 	private void RefreshCategories()
 	{
-        TabControl.Items.Refresh();
+        RefreshNotes();
         MoveDestination.Items.Refresh();
     }
 
@@ -422,6 +467,13 @@ public partial class MainWindow : Window
         ChangeNoteCategory.IsEnabled = !isSearch;
         MoveDestination.IsEnabled = !isSearch;
     }
+
+    private void Reload()
+    {
+		Categories = controller.GetAll().ToList();
+        UpdateCategories();
+		UpdateNotes();
+	}
 
     private void Save(bool delayed = false)
 	{

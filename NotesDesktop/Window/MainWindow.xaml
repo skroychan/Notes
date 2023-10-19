@@ -60,7 +60,9 @@
 				</Style>
             </TabControl.Resources>
 		</TabControl>
-		<TextBox x:Name="SearchBox" HorizontalAlignment="Stretch" Margin="10,10,10,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="Auto" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" TextChanged="SearchTextChanged"/>
+		<TextBox x:Name="SearchBox" HorizontalAlignment="Stretch" Margin="10,10,40,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="Auto" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" TextChanged="SearchTextChanged"/>
+		<Button x:Name="ArchiveMode" Content="📁" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="25" Height="25" Click="ArchiveModeClick" ToolTip="Switch to archive"/>
+		<Button x:Name="MainMode" Content="↺" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="25" Height="25" Click="MainModeClick" ToolTip="Switch to notes" Visibility="Hidden"/>
 		<Button x:Name="AddCategory" Content="+" HorizontalAlignment="Left" Margin="10,0,0,40" VerticalAlignment="Bottom" Height="25" Click="AddCategoryClick" Width="25" ToolTip="New category"/>
 		<Button x:Name="RemoveCategory" Content="🗑" HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Height="25" Click="RemoveCategoryClick" Width="25" ToolTip="Remove category"/>
 		<RepeatButton x:Name="MoveCategoryUp" Content="🡑" HorizontalAlignment="Left" Margin="40,0,0,40" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryUpClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move up"/>
@@ -76,6 +78,7 @@
 		<RepeatButton x:Name="MoveNoteDown" Content="🡓" HorizontalAlignment="Right" Margin="0,0,40,10" VerticalAlignment="Bottom" Height="25" Click="MoveNoteDownClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move down"/>
 		<Button x:Name="AddNote" Content="+" HorizontalAlignment="Right" Margin="0,0,70,40" VerticalAlignment="Bottom" Height="25" Click="AddNoteClick" Width="25" ToolTip="New note"/>
 		<Button x:Name="ArchiveNote" Content="📁" HorizontalAlignment="Right" Margin="0,0,70,10" VerticalAlignment="Bottom" Height="25" Click="ArchiveNoteClick" Width="25" ToolTip="Archive note"/>
+		<Button x:Name="UnarchiveNote" Content="↺" HorizontalAlignment="Right" Margin="0,0,70,10" VerticalAlignment="Bottom" Height="25" Click="UnarchiveNoteClick" Width="25" ToolTip="Unarchive note" Visibility="Hidden"/>
 		<Button x:Name="RemoveNote" Content="🗑" HorizontalAlignment="Right" Margin="0,0,100,10" VerticalAlignment="Bottom" Height="25" Click="RemoveNoteClick" Width="25" ToolTip="Remove note"/>
 		<ComboBox x:Name="MoveDestination" ItemsSource="{Binding Categories}" DisplayMemberPath="Name" HorizontalAlignment="Right" Margin="0,0,100,40" VerticalAlignment="Bottom" Width="125" Height="25"/>
 		<Button x:Name="ChangeNoteCategory" Content="→" HorizontalAlignment="Right" Margin="0,0,230,40" VerticalAlignment="Bottom" Height="25" Width="25" Click="ChangeNoteCategoryClick" ToolTip="Move to another category"/>

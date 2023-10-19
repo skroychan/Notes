@@ -9,22 +9,19 @@ namespace Notes.Service;
 
 public class NoteService
 {
-    private readonly ArchiveService archiveService;
-    private readonly string resourcesPath;
+	private readonly string DatabasePath;
 
-    private List<Category> Categories { get; set; }
-    private Dictionary<long, Category> CategoriesCache { get; set; }
-    private Dictionary<long, (Note note, long categoryId)> NotesCache { get; set; }
-    private long MaxNoteId { get; set; }
-    private long MaxCategoryId { get; set; }
+	private List<Category> Categories { get; set; }
+	private Dictionary<long, Category> CategoriesCache { get; set; }
+	private Dictionary<long, (Note note, long categoryId)> NotesCache { get; set; }
+	private long MaxNoteId { get; set; }
+	private long MaxCategoryId { get; set; }
 
 
-    public NoteService()
+    public NoteService(string storageName)
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        resourcesPath = Path.Combine(appDataPath, "skroy", "Notes", "notes.json");
-
-        archiveService = new ArchiveService(Path.Combine(appDataPath, "skroy", "Notes", "archive.json"));
+        DatabasePath = Path.Combine(appDataPath, "skroy", "Notes", storageName + ".json");
 
         Load();
     }
@@ -46,10 +43,21 @@ public class NoteService
         return newCategory;
     }
 
+    public Category CreateCategory(Category category)
+    {
+        var newCategory = CreateCategory();
+
+        newCategory.Name = category.Name;
+        newCategory.Notes = category.Notes;
+        newCategory.Color = category.Color;
+
+        return newCategory;
+    }
+
     public Note CreateNote(long categoryId)
     {
         if (!CategoriesCache.TryGetValue(categoryId, out var category))
-            throw new ArgumentException($"Category with id={categoryId} doesn't exist");
+            throw new ArgumentException($"Category with id={categoryId} does not exist");
 
         var newNote = new Note()
         {
@@ -63,6 +71,34 @@ public class NoteService
 
         return newNote;
     }
+
+    public Note CreateNote(long categoryId, Note note)
+    {
+        var newNote = CreateNote(categoryId);
+
+        newNote.Text = note.Text;
+        newNote.Color = note.Color;
+
+        NotesCache.Remove(note.Id);
+		NotesCache[newNote.Id] = (newNote, categoryId);
+
+		return newNote;
+    }
+
+    public Category GetCategory(long categoryId)
+    {
+        return CategoriesCache[categoryId];
+    }
+
+    public Note GetNote(long noteId)
+    {
+        return NotesCache[noteId].note;
+    }
+
+    public long GetNoteCategory(long noteId)
+    {
+		return NotesCache[noteId].categoryId;
+	}
 
     public IEnumerable<Category> GetAll()
     {
@@ -187,26 +223,15 @@ public class NoteService
         return true;
     }
 
-    public bool ArchiveNote(long noteId)
-    {
-        if (!NotesCache.TryGetValue(noteId, out var note) || !CategoriesCache.TryGetValue(note.categoryId, out var category))
-            return false;
-
-        archiveService.ArchiveNote(note.note, category);
-        DeleteNote(note.note.Id);
-
-        return true;
-    }
-
     public void Save()
     {
-        Json.WriteJson(resourcesPath, Categories);
+        Json.WriteJson(DatabasePath, Categories);
     }
 
 
     private void Load()
     {
-        var json = Json.ReadJson<List<Category>>(resourcesPath);
+        var json = Json.ReadJson<List<Category>>(DatabasePath);
 
         if (json == null || !json.Any())
         {

@@ -1,6 +1,7 @@
 ﻿using Notes.Entity;
 using Notes.Service;
 using NotesDesktop.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -9,93 +10,123 @@ namespace NotesDesktop.Controller;
 
 public class NoteController
 {
-    private readonly NoteService noteService;
+    private Dictionary<NoteStorage, NoteService> NoteServices { get; } = new();
+    private NoteStorage CurrentStorage { get; set; }
 
-    public NoteController()
+
+	public NoteController()
     {
-        noteService = new NoteService();
+        NoteServices[NoteStorage.Main] = new NoteService("notes");
+		NoteServices[NoteStorage.Archive] = new NoteService("archive");
     }
 
 
-    public CategoryModel CreateCategory(string name)
+    public CategoryModel CreateCategory()
     {
-        var category = noteService.CreateCategory(name);
+        var category = GetService().CreateCategory();
 
         return ToModel(category);
     }
 
     public NoteModel CreateNote(long categoryID)
     {
-        var note = noteService.CreateNote(categoryID);
+        var note = GetService().CreateNote(categoryID);
 
         return ToModel(note);
     }
 
     public IEnumerable<CategoryModel> GetAll()
     {
-        return noteService.GetAll().Select(ToModel);
+        return GetService().GetAll().Select(ToModel);
     }
 
     public IEnumerable<CategoryModel> Search(string query)
     {
-        return noteService.Search(query).Select(ToModel);
+        return GetService().Search(query).Select(ToModel);
     }
 
     public bool DeleteCategory(long categoryId)
     {
-        return noteService.DeleteCategory(categoryId);
+        return GetService().DeleteCategory(categoryId);
     }
 
     public bool DeleteNote(long noteId)
     {
-        return noteService.DeleteNote(noteId);
+        return GetService().DeleteNote(noteId);
     }
 
     public bool ChangeNoteCategory(long noteId, long toCategoryId)
     {
-        return noteService.ChangeNoteCategory(noteId, toCategoryId);
+        return GetService().ChangeNoteCategory(noteId, toCategoryId);
     }
 
     public bool MoveCategory(long categoryId, int newPosition)
     {
-        return noteService.MoveCategory(categoryId, newPosition);
+        return GetService().MoveCategory(categoryId, newPosition);
     }
 
     public bool MoveNote(long noteId, int newPosition)
     {
-        return noteService.MoveNote(noteId, newPosition);
+        return GetService().MoveNote(noteId, newPosition);
     }
 
     public bool UpdateNoteText(long noteId, string newText)
     {
-        return noteService.UpdateNoteText(noteId, newText);
+        return GetService().UpdateNoteText(noteId, newText);
     }
 
     public bool UpdateNoteColor(long noteId, string hexColor)
     {
-        return noteService.UpdateNoteColor(noteId, hexColor);
+        return GetService().UpdateNoteColor(noteId, hexColor);
     }
 
     public bool UpdateCategoryName(long categoryId, string newName)
     {
-        return noteService.UpdateCategoryName(categoryId, newName);
+        return GetService().UpdateCategoryName(categoryId, newName);
     }
 
     public bool UpdateCategoryColor(long categoryId, string hexColor)
     {
-        return noteService.UpdateCategoryColor(categoryId, hexColor);
+        return GetService().UpdateCategoryColor(categoryId, hexColor);
     }
 
-    public bool ArchiveNote(long noteId)
+    public bool ChangeNoteStorage(long noteId, NoteStorage targetStorage)
     {
-        return noteService.ArchiveNote(noteId);
+        if (!NoteServices.TryGetValue(targetStorage, out var targetService))
+            return false;
+
+        var currentService = GetService();
+		var note = currentService.GetNote(noteId);
+        var categoryId = currentService.GetNoteCategory(noteId);
+        var targetCategory = targetService.GetCategory(categoryId);
+        if (targetCategory == null)
+		{
+			var category = currentService.GetCategory(categoryId);
+			targetCategory = targetService.CreateCategory(category);
+		}
+
+		return currentService.DeleteNote(note.Id)
+            && targetService.CreateNote(targetCategory.Id, note) != null;
+    }
+
+    public void SetStorage(NoteStorage mode)
+    {
+        CurrentStorage = mode;
     }
 
     public void Save()
     {
-        noteService.Save();
+		GetService().Save();
     }
 
+
+    private NoteService GetService()
+    {
+        if (NoteServices.TryGetValue(CurrentStorage, out var service))
+            return service;
+           
+        throw new ArgumentException($"Storage '{CurrentStorage}' has no corresponding {typeof(NoteService)}");
+    }
 
     private CategoryModel ToModel(Category category)
     {
@@ -124,4 +155,11 @@ public class NoteController
             Color = note.Color
         };
     }
+}
+
+
+public enum NoteStorage
+{
+    Main,
+    Archive
 }
