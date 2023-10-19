@@ -30,12 +30,12 @@ public class NoteService
     }
 
 
-    public Category CreateCategory(string name)
+    public Category CreateCategory()
     {
         var newCategory = new Category()
         {
             Id = ++MaxCategoryId,
-            Name = name,
+            Name = string.Empty,
             Notes = new List<Note>(),
             CreationDate = DateTime.Now
         };

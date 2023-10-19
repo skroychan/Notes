@@ -9,13 +9,12 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace NotesDesktop;
 
 public partial class MainWindow : Window
 {
-    private readonly NoteController NoteController;
+    private readonly NoteController controller;
 
 	private CategoryModel SelectedCategory { get; set; }
 	private NoteModel SelectedNote { get; set; }
@@ -26,15 +25,15 @@ public partial class MainWindow : Window
 
 	public MainWindow()
 	{
-		NoteController = new NoteController();
+		controller = new NoteController();
 
-		Categories = NoteController.GetAll().ToList();
+        Categories = controller.GetAll().ToList();
 
 		InitializeComponent();
 
 		SaveTimer = new Timer(5000);
 		SaveTimer.Stop();
-        SaveTimer.Elapsed += (_, _) => NoteController.Save();
+        SaveTimer.Elapsed += (_, _) => controller.Save();
 
         SetTitle();
 	}
@@ -43,13 +42,15 @@ public partial class MainWindow : Window
 
     private void AddCategoryClick(object sender, RoutedEventArgs e)
     {
-        var newCategory = NoteController.CreateCategory("New");
+        var newCategory = controller.CreateCategory();
         if (newCategory == null)
             return;
 
+        controller.UpdateCategoryName(newCategory.Id, "New");
+
         var selectedIndex = Categories.IndexOf(SelectedCategory);
         if (selectedIndex <= Categories.Count - 1)
-            NoteController.MoveCategory(newCategory.Id, selectedIndex + 1);
+            controller.MoveCategory(newCategory.Id, selectedIndex + 1);
 
         Categories.Insert(selectedIndex + 1, newCategory);
         UnselectNote();
@@ -69,7 +70,7 @@ public partial class MainWindow : Window
                 return;
         }
 
-        NoteController.DeleteCategory(SelectedCategory.Id);
+        controller.DeleteCategory(SelectedCategory.Id);
 
         Categories.Remove(SelectedCategory);
         UnselectNote();
@@ -101,12 +102,12 @@ public partial class MainWindow : Window
         if (SelectedCategory == null)
             return;
 
-        var newNote = NoteController.CreateNote(SelectedCategory.Id);
+        var newNote = controller.CreateNote(SelectedCategory.Id);
         if (newNote == null)
             return;
 
         var selectedIndex = SelectedCategory.Notes.IndexOf(SelectedNote);
-        NoteController.MoveNote(newNote.Id, selectedIndex + 1);
+        controller.MoveNote(newNote.Id, selectedIndex + 1);
 
         SelectedCategory.Notes.Insert(selectedIndex + 1, newNote);
         TabControl.Items.Refresh();
@@ -127,7 +128,7 @@ public partial class MainWindow : Window
                 return;
         }
 
-        if (!NoteController.DeleteNote(SelectedNote.Id))
+        if (!controller.DeleteNote(SelectedNote.Id))
             return;
 
         SelectedCategory.Notes.Remove(SelectedNote);
@@ -148,7 +149,7 @@ public partial class MainWindow : Window
                 return;
         }
 
-        if (!NoteController.ArchiveNote(SelectedNote.Id))
+        if (!controller.ArchiveNote(SelectedNote.Id))
             return;
 
         SelectedCategory.Notes.Remove(SelectedNote);
@@ -182,7 +183,7 @@ public partial class MainWindow : Window
             return;
 
         var destinationCategory = (CategoryModel)MoveDestination.SelectedItem;
-        NoteController.ChangeNoteCategory(SelectedNote.Id, destinationCategory.Id);
+        controller.ChangeNoteCategory(SelectedNote.Id, destinationCategory.Id);
 
         SelectedCategory.Notes.Remove(SelectedNote);
         destinationCategory.Notes.Add(SelectedNote);
@@ -197,7 +198,7 @@ public partial class MainWindow : Window
         if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
             SelectedNote.Color = colorDialog.Color.ToString();
-            NoteController.UpdateNoteColor(SelectedNote.Id, SelectedNote.Color);
+            controller.UpdateNoteColor(SelectedNote.Id, SelectedNote.Color);
             SetNoteColor();
             RefreshNotes();
         }
@@ -209,17 +210,17 @@ public partial class MainWindow : Window
         if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
             SelectedCategory.Color = colorDialog.Color.ToString();
-            NoteController.UpdateCategoryColor(SelectedCategory.Id, SelectedCategory.Color);
+            controller.UpdateCategoryColor(SelectedCategory.Id, SelectedCategory.Color);
             SetCategoryColor();
             RefreshCategories();
         }
     }
 
-    #endregion
+	#endregion
 
-    #region Events
+	#region Events
 
-    private void WindowClosing(object sender, CancelEventArgs e)
+	private void WindowClosing(object sender, CancelEventArgs e)
     {
         Save();
     }
@@ -245,19 +246,19 @@ public partial class MainWindow : Window
         }
         else
         {
-            var searchResults = NoteController.Search(SearchBox.Text, ignoreCase: true);
+            var searchResults = controller.Search(SearchBox.Text);
             TabControl.ItemsSource = searchResults;
             Title = $"Found {searchResults.SelectMany(c => c.Notes).Count()} notes in {searchResults.Count()} categories";
             ToggleSearch(true);
         }
-    }
+	}
 
-    private void NoteTextChanged(object sender, TextChangedEventArgs e)
+	private void NoteTextChanged(object sender, TextChangedEventArgs e)
     {
         if (SelectedNote == null)
             return;
 
-        NoteController.UpdateNoteText(SelectedNote.Id, SelectedNote.Text);
+        controller.UpdateNoteText(SelectedNote.Id, SelectedNote.Text);
         SelectedNote.ModificationDate = DateTime.Now;
         SetLastModifiedText();
 
@@ -269,7 +270,7 @@ public partial class MainWindow : Window
         if (!IsLoaded || SelectedCategory == null)
             return;
 
-        NoteController.UpdateCategoryName(SelectedCategory.Id, SelectedCategory.Name);
+        controller.UpdateCategoryName(SelectedCategory.Id, SelectedCategory.Name);
         Save(true);
     }
 
@@ -339,7 +340,7 @@ public partial class MainWindow : Window
         if (newPosition < 0 || newPosition >= TabControl.Items.Count)
             return;
 
-        NoteController.MoveCategory(SelectedCategory.Id, newPosition);
+        controller.MoveCategory(SelectedCategory.Id, newPosition);
 
         Categories.RemoveAt(TabControl.SelectedIndex);
         Categories.Insert(newPosition, SelectedCategory);
@@ -354,7 +355,7 @@ public partial class MainWindow : Window
         if (newPosition < 0 || newPosition >= SelectedCategory.Notes.Count)
             return;
 
-		NoteController.MoveNote(SelectedNote.Id, newPosition);
+		controller.MoveNote(SelectedNote.Id, newPosition);
 
         SelectedCategory.Notes.Remove(SelectedNote);
         SelectedCategory.Notes.Insert(newPosition, SelectedNote);
@@ -426,18 +427,11 @@ public partial class MainWindow : Window
 	{
 		if (!delayed)
 		{
-            NoteController.Save();
+            controller.Save();
 			return;
 		}
 
 		SaveTimer.Stop();
 		SaveTimer.Start();		
-    }
-
-	private SolidColorBrush ToBrush(System.Drawing.Color color)
-	{
-        var brush = WpfUtils.ToBrush(color);
-        brush.Opacity = 0.3;
-		return brush;
     }
 }

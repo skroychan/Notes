@@ -36,9 +36,9 @@ public class NoteController
         return noteService.GetAll().Select(ToModel);
     }
 
-    public IEnumerable<CategoryModel> Search(string query, bool ignoreCase)
+    public IEnumerable<CategoryModel> Search(string query)
     {
-        return noteService.Search(query, ignoreCase).Select(ToModel);
+        return noteService.Search(query).Select(ToModel);
     }
 
     public bool DeleteCategory(long categoryId)
