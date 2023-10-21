@@ -2,7 +2,7 @@
 
 namespace NotesDesktop.Util;
 
-public static class WpfUtils
+public static class ColorUtils
 {
     public static SolidColorBrush ToBrush(string hexColor)
     {
@@ -14,12 +14,16 @@ public static class WpfUtils
 
     public static SolidColorBrush ToBrush(System.Drawing.Color color)
     {
-        var colorHexString = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-        return ToBrush(colorHexString);
+		return ToBrush(ToHexString(color));
     }
 
     public static string ToHexString(SolidColorBrush brush)
     {
         return $"#{brush.Color.R:X2}{brush.Color.G:X2}{brush.Color.B:X2}";
     }
+
+    public static string ToHexString(System.Drawing.Color color) 
+    {
+		return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+	}
 }
