@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,7 +17,6 @@ public partial class MainWindow : Window
 
 	private CategoryModel SelectedCategory { get; set; }
 	private NoteModel SelectedNote { get; set; }
-	private Timer SaveTimer { get; set; }
 
 	public List<CategoryModel> Categories { get; set; }
 
@@ -30,10 +28,6 @@ public partial class MainWindow : Window
         Categories = controller.GetAll().ToList();
 
 		InitializeComponent();
-
-		SaveTimer = new Timer(5000);
-		SaveTimer.Stop();
-        SaveTimer.Elapsed += (_, _) => controller.Save();
 
         SetTitle();
 	}
@@ -247,7 +241,7 @@ public partial class MainWindow : Window
 
 	private void WindowClosing(object sender, CancelEventArgs e)
     {
-        Save();
+        //Save();
     }
 
     private void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -286,8 +280,6 @@ public partial class MainWindow : Window
         controller.UpdateNoteText(SelectedNote.Id, SelectedNote.Text);
         SelectedNote.ModificationDate = DateTime.Now;
         SetLastModifiedText();
-
-        Save(true);
     }
 
     private void CategoryNameChanged(object sender, TextChangedEventArgs e)
@@ -296,7 +288,6 @@ public partial class MainWindow : Window
             return;
 
         controller.UpdateCategoryName(SelectedCategory.Id, SelectedCategory.Name);
-        Save(true);
     }
 
     private void NoteSelected(object sender, MouseEventArgs e)
@@ -474,16 +465,4 @@ public partial class MainWindow : Window
         UpdateCategories();
 		UpdateNotes();
 	}
-
-    private void Save(bool delayed = false)
-	{
-		if (!delayed)
-		{
-            controller.Save();
-			return;
-		}
-
-		SaveTimer.Stop();
-		SaveTimer.Start();		
-    }
 }
