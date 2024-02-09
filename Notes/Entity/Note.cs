@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Notes.Entity;
+namespace skroy.Notes.Entity;
 
 public class Note
 {

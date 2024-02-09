@@ -1,4 +1,4 @@
-﻿using Notes.Entity;
+﻿using skroy.Notes.Entity;
 using skroy.ORM;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Notes.Repository;
+namespace skroy.Notes.Repository;
 
 public class NoteRepository
 {

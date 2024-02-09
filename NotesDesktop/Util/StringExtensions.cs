@@ -1,4 +1,4 @@
-﻿namespace NotesDesktop.Util;
+﻿namespace skroy.NotesDesktop.Util;
 
 public static class StringExtensions
 {

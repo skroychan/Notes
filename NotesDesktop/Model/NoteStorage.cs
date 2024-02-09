@@ -1,4 +1,4 @@
-﻿namespace NotesDesktop.Model;
+﻿namespace skroy.NotesDesktop.Model;
 
 public enum NoteStorage
 {

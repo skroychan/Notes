@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
 
-namespace NotesDesktop.Util;
+namespace skroy.NotesDesktop.Util;
 
 public static class ColorUtils
 {

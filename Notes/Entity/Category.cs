@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Notes.Entity;
+namespace skroy.Notes.Entity;
 
 public class Category
 {

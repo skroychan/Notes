@@ -5,6 +5,8 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <RootNamespace>skroy.Notes</RootNamespace>
+    <AssemblyName>skroy.Notes</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="lib\**" />

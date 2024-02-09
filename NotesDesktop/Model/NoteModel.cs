@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NotesDesktop.Model;
+namespace skroy.NotesDesktop.Model;
 
 public class NoteModel
 {

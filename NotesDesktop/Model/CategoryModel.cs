@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NotesDesktop.Model;
+namespace skroy.NotesDesktop.Model;
 
 public class CategoryModel
 {

@@ -1,10 +1,10 @@
-﻿using Notes.Entity;
-using Notes.Repository;
+﻿using skroy.Notes.Entity;
+using skroy.Notes.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Notes.Service;
+namespace skroy.Notes.Service;
 
 public class NoteService
 {

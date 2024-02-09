@@ -9,6 +9,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>notes.ico</ApplicationIcon>
+    <AssemblyName>skroy.NotesDesktop</AssemblyName>
+    <RootNamespace>skroy.NotesDesktop</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Notes\Notes.csproj" />

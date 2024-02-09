@@ -1,12 +1,12 @@
-﻿using Notes.Entity;
-using Notes.Service;
-using NotesDesktop.Model;
+﻿using skroy.Notes.Entity;
+using skroy.Notes.Service;
+using skroy.NotesDesktop.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 
-namespace NotesDesktop.Controller;
+namespace skroy.NotesDesktop.Controller;
 
 public class NoteController
 {

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 
-namespace Notes.Util;
+namespace skroy.Notes.Util;
 
 public static class Json
 {

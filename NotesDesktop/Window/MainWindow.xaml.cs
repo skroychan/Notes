@@ -1,6 +1,6 @@
-﻿using NotesDesktop.Controller;
-using NotesDesktop.Model;
-using NotesDesktop.Util;
+﻿using skroy.NotesDesktop.Controller;
+using skroy.NotesDesktop.Model;
+using skroy.NotesDesktop.Util;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace NotesDesktop;
+namespace skroy.NotesDesktop;
 
 public partial class MainWindow : Window
 {
