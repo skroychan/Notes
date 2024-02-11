@@ -1,6 +1,6 @@
 ﻿namespace skroy.NotesDesktop.Util;
 
-public static class StringExtensions
+internal static class StringExtensions
 {
 	public static string Truncate(this string source, int maxLength)
 	{

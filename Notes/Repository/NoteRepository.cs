@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace skroy.Notes.Repository;
 
-public class NoteRepository
+internal class NoteRepository
 {
 	private readonly Database database;
 

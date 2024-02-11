@@ -40,11 +40,11 @@ public partial class MainWindow : Window
         if (newCategory == null)
             return;
 
-        controller.UpdateCategoryName(newCategory.Id, "New");
+		controller.SetCategoryName(newCategory.Id, "New");
 
         var selectedIndex = Categories.IndexOf(SelectedCategory);
         if (selectedIndex <= Categories.Count - 1)
-            controller.MoveCategory(newCategory.Id, selectedIndex + 1);
+			controller.ReorderCategory(newCategory.Id, selectedIndex + 1);
 
         Categories.Insert(selectedIndex + 1, newCategory);
         UnselectNote();
@@ -57,7 +57,7 @@ public partial class MainWindow : Window
         if (SelectedCategory == null)
             return;
 
-        if (SelectedCategory.Notes.Any())
+		if (SelectedCategory.Notes.Count != 0)
         {
             var result = MessageBox.Show($"Are you sure you want to delete '{SelectedCategory.Name}'?", "Confirm deletion", MessageBoxButton.YesNo, MessageBoxImage.Stop);
             if (result != MessageBoxResult.Yes)
@@ -101,7 +101,7 @@ public partial class MainWindow : Window
             return;
 
         var selectedIndex = SelectedCategory.Notes.IndexOf(SelectedNote);
-        controller.MoveNote(newNote.Id, selectedIndex + 1);
+		controller.ReorderNote(newNote.Id, selectedIndex + 1);
 
         SelectedCategory.Notes.Insert(selectedIndex + 1, newNote);
         TabControl.Items.Refresh();
@@ -197,7 +197,7 @@ public partial class MainWindow : Window
         if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
             SelectedNote.Color = ColorUtils.ToHexString(colorDialog.Color);
-            controller.UpdateNoteColor(SelectedNote.Id, SelectedNote.Color);
+			controller.SetNoteColor(SelectedNote.Id, SelectedNote.Color);
             SetNoteColor();
             RefreshNotes();
         }
@@ -209,7 +209,7 @@ public partial class MainWindow : Window
         if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
             SelectedCategory.Color = ColorUtils.ToHexString(colorDialog.Color);
-			controller.UpdateCategoryColor(SelectedCategory.Id, SelectedCategory.Color);
+			controller.SetCategoryColor(SelectedCategory.Id, SelectedCategory.Color);
             SetCategoryColor();
             RefreshCategories();
         }
@@ -277,7 +277,7 @@ public partial class MainWindow : Window
         if (SelectedNote == null)
             return;
 
-        controller.UpdateNoteText(SelectedNote.Id, SelectedNote.Text);
+		controller.SetNoteText(SelectedNote.Id, SelectedNote.Text);
         SelectedNote.ModificationDate = DateTime.Now;
         SetLastModifiedText();
     }
@@ -287,7 +287,7 @@ public partial class MainWindow : Window
         if (!IsLoaded || SelectedCategory == null)
             return;
 
-        controller.UpdateCategoryName(SelectedCategory.Id, SelectedCategory.Name);
+		controller.SetCategoryName(SelectedCategory.Id, SelectedCategory.Name);
     }
 
     private void NoteSelected(object sender, MouseEventArgs e)
@@ -356,7 +356,7 @@ public partial class MainWindow : Window
         if (newPosition < 0 || newPosition >= TabControl.Items.Count)
             return;
 
-        controller.MoveCategory(SelectedCategory.Id, newPosition);
+		controller.ReorderCategory(SelectedCategory.Id, newPosition);
 
         Categories.RemoveAt(TabControl.SelectedIndex);
         Categories.Insert(newPosition, SelectedCategory);
@@ -371,7 +371,7 @@ public partial class MainWindow : Window
         if (newPosition < 0 || newPosition >= SelectedCategory.Notes.Count)
             return;
 
-		controller.MoveNote(SelectedNote.Id, newPosition);
+		controller.ReorderNote(SelectedNote.Id, newPosition);
 
         SelectedCategory.Notes.Remove(SelectedNote);
         SelectedCategory.Notes.Insert(newPosition, SelectedNote);

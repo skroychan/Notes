@@ -2,7 +2,7 @@
 
 namespace skroy.NotesDesktop.Util;
 
-public static class ColorUtils
+internal static class ColorUtils
 {
     public static SolidColorBrush ToBrush(string hexColor)
     {

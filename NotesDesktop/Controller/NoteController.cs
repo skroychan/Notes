@@ -54,32 +54,32 @@ public class NoteController
 		return NoteService.SetNoteCategory(noteId, toCategoryId);
 	}
 
-	public bool MoveCategory(long categoryId, int newPosition)
+	public bool ReorderCategory(long categoryId, int newPosition)
 	{
 		return NoteService.ReorderCategory(categoryId, newPosition);
 	}
 
-	public bool MoveNote(long noteId, int newPosition)
+	public bool ReorderNote(long noteId, int newPosition)
 	{
 		return NoteService.ReorderNote(noteId, newPosition);
 	}
 
-	public bool UpdateNoteText(long noteId, string newText)
+	public bool SetNoteText(long noteId, string newText)
 	{
 		return NoteService.SetNoteText(noteId, newText);
 	}
 
-	public bool UpdateNoteColor(long noteId, string hexColor)
+	public bool SetNoteColor(long noteId, string hexColor)
 	{
 		return NoteService.SetNoteColor(noteId, hexColor);
 	}
 
-	public bool UpdateCategoryName(long categoryId, string newName)
+	public bool SetCategoryName(long categoryId, string newName)
 	{
 		return NoteService.SetCategoryName(categoryId, newName);
 	}
 
-	public bool UpdateCategoryColor(long categoryId, string hexColor)
+	public bool SetCategoryColor(long categoryId, string hexColor)
 	{
 		return NoteService.SetCategoryColor(categoryId, hexColor);
 	}

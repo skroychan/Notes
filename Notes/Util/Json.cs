@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace skroy.Notes.Util;
 
-public static class Json
+internal static class Json
 {
 	public static T ReadJson<T>(string path)
 	{
