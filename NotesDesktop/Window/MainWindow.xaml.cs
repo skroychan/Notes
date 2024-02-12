@@ -17,6 +17,8 @@ public partial class MainWindow : Window
 
 	private CategoryModel SelectedCategory { get; set; }
 	private NoteModel SelectedNote { get; set; }
+	private Dictionary<long, CategoryUpdateTimer> CategoryUpdateTimers { get; set; }
+	private Dictionary<long, NoteUpdateTimer> NoteUpdateTimers { get; set; }
 
 	public List<CategoryModel> Categories { get; set; }
 
@@ -24,6 +26,9 @@ public partial class MainWindow : Window
 	public MainWindow()
 	{
 		controller = new NoteController();
+
+		CategoryUpdateTimers = [];
+		NoteUpdateTimers = [];
 
         Categories = controller.GetAll().ToList();
 
@@ -67,7 +72,9 @@ public partial class MainWindow : Window
         controller.DeleteCategory(SelectedCategory.Id);
 
         Categories.Remove(SelectedCategory);
-        UnselectNote();
+		CategoryUpdateTimers.Remove(SelectedCategory.Id);
+		foreach (var note in SelectedCategory.Notes)
+			NoteUpdateTimers.Remove(note.Id);
         UpdateCategories();
     }
 
@@ -124,6 +131,8 @@ public partial class MainWindow : Window
 
         if (!controller.DeleteNote(SelectedNote.Id))
             return;
+
+		NoteUpdateTimers.Remove(SelectedNote.Id);
 
         SelectedCategory.Notes.Remove(SelectedNote);
         UnselectNote();
@@ -241,7 +250,11 @@ public partial class MainWindow : Window
 
 	private void WindowClosing(object sender, CancelEventArgs e)
     {
-        //Save();
+		foreach (var timer in CategoryUpdateTimers.Values)
+			controller.SetCategoryName(timer.Id, timer.Name);
+
+		foreach (var timer in NoteUpdateTimers.Values)
+			controller.SetNoteText(timer.Id, timer.Text);
     }
 
     private void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -277,7 +290,7 @@ public partial class MainWindow : Window
         if (SelectedNote == null)
             return;
 
-		controller.SetNoteText(SelectedNote.Id, SelectedNote.Text);
+		UpdateNote();
         SelectedNote.ModificationDate = DateTime.Now;
         SetLastModifiedText();
     }
@@ -287,7 +300,7 @@ public partial class MainWindow : Window
         if (!IsLoaded || SelectedCategory == null)
             return;
 
-		controller.SetCategoryName(SelectedCategory.Id, SelectedCategory.Name);
+		UpdateCategory();
     }
 
     private void NoteSelected(object sender, MouseEventArgs e)
@@ -464,5 +477,55 @@ public partial class MainWindow : Window
 		Categories = controller.GetAll().ToList();
         UpdateCategories();
 		UpdateNotes();
+	}
+
+	private void UpdateNote()
+	{
+		if (NoteUpdateTimers.TryGetValue(SelectedNote.Id, out var existingTimer))
+		{
+			existingTimer.Text = SelectedNote.Text;
+			existingTimer.Stop();
+			existingTimer.Start();
+			return;
+		}
+
+		var timer = new NoteUpdateTimer
+		{
+			Interval = 3000,
+			Id = SelectedNote.Id,
+			Text = SelectedNote.Text
+		};
+		timer.Elapsed += (sender, _) => UpdateNoteCallback((NoteUpdateTimer)sender);
+		NoteUpdateTimers[SelectedNote.Id] = timer;
+	}
+
+	private void UpdateCategory()
+	{
+		if (CategoryUpdateTimers.TryGetValue(SelectedCategory.Id, out var existingTimer))
+		{
+			existingTimer.Name = SelectedCategory.Name;
+			existingTimer.Stop();
+			existingTimer.Start();
+			return;
+		}
+
+		var timer = new CategoryUpdateTimer
+		{
+			Interval = 3000,
+			Id = SelectedCategory.Id,
+			Name = SelectedCategory.Name
+		};
+		timer.Elapsed += (sender, _) => UpdateCategoryCallback((CategoryUpdateTimer)sender);
+		CategoryUpdateTimers[SelectedCategory.Id] = timer;
+	}
+
+	private void UpdateNoteCallback(NoteUpdateTimer timer)
+	{
+		controller.SetNoteText(timer.Id, timer.Text);
+	}
+
+	private void UpdateCategoryCallback(CategoryUpdateTimer timer)
+	{
+		controller.SetCategoryName(timer.Id, timer.Name);
 	}
 }
