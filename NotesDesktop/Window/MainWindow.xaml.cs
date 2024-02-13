@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace skroy.NotesDesktop;
@@ -295,9 +296,9 @@ public partial class MainWindow : Window
         SetLastModifiedText();
     }
 
-    private void CategoryNameChanged(object sender, TextChangedEventArgs e)
+	private void CategoryNameChanged(object sender, DataTransferEventArgs e)
     {
-        if (!IsLoaded || SelectedCategory == null)
+		if (SelectedCategory == null)
             return;
 
 		UpdateCategory();
@@ -306,6 +307,7 @@ public partial class MainWindow : Window
     private void NoteSelected(object sender, MouseEventArgs e)
     {
         var item = (ListViewItem)sender;
+		item.IsSelected = true;
         SelectNote((NoteModel)item.Content);
     }
 

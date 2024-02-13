@@ -24,14 +24,43 @@
 			</TabControl.Template>
 			<TabControl.ItemTemplate>
 				<DataTemplate>
-					<TextBlock Text="{Binding Name}"/>
+					<TextBlock Text="{Binding Name, NotifyOnTargetUpdated=True}" TargetUpdated="CategoryNameChanged"/>
 				</DataTemplate>
 			</TabControl.ItemTemplate>
 			<TabControl.ItemContainerStyle>
 				<Style TargetType="TabItem">
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="{x:Type TabItem}">
+								<Grid SnapsToDevicePixels="True">
+									<Border x:Name="Border" BorderBrush="LightGray" BorderThickness="1,1,0,1" Padding="{TemplateBinding Padding}">
+										<ContentPresenter x:Name="Content" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+									</Border>
+									<Grid.Style>
+										<Style TargetType="{x:Type Grid}">
 					<Setter Property="Background">
 						<Setter.Value>
 							<SolidColorBrush Color="{Binding Color}" Opacity="0.3"/>
+						</Setter.Value>
+					</Setter>
+				</Style>
+									</Grid.Style>
+								</Grid>
+								<ControlTemplate.Triggers>
+									<MultiTrigger>
+										<MultiTrigger.Conditions>
+											<Condition Property="IsSelected" Value="False"/>
+											<Condition Property="IsMouseOver" Value="True"/>
+										</MultiTrigger.Conditions>
+										<Setter Property="Background" TargetName="Border" Value="#1026A0DA"/>
+										<Setter Property="BorderBrush" TargetName="Border" Value="#A826A0DA"/>
+									</MultiTrigger>
+									<Trigger Property="IsSelected" Value="True">
+										<Setter Property="Margin" Value="-2,-2,0,-2"/>
+										<Setter Property="Margin" TargetName="Content" Value="0,0,2,0"/>
+									</Trigger>
+								</ControlTemplate.Triggers>
+							</ControlTemplate>
 						</Setter.Value>
 					</Setter>
 				</Style>
@@ -41,24 +70,44 @@
 					<ListView ItemsSource="{Binding Notes}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" SelectionMode="Single">
 						<ListView.ItemTemplate>
 							<DataTemplate>
-								<TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True">
+								<TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" BorderThickness="0" Padding="4,2,4,2" TextChanged="NoteTextChanged">
 									<TextBox.Background>
 										<SolidColorBrush Color="{Binding Color}" Opacity="0.3"/>
 									</TextBox.Background>
 								</TextBox>
 							</DataTemplate>
 						</ListView.ItemTemplate>
+						<ListView.ItemContainerStyle>
+							<Style TargetType="ListViewItem">
+								<Setter Property="Margin" Value="0"/>
+								<Setter Property="Padding" Value="0"/>
+								<Setter Property="BorderBrush" Value="LightGray"/>
+								<Setter Property="BorderThickness" Value="0,0,0,1"/>
+								<Setter Property="Template">
+									<Setter.Value>
+										<ControlTemplate TargetType="{x:Type ListBoxItem}">
+											<Border Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+												<ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+											</Border>
+											<ControlTemplate.Triggers>
+												<Trigger Property="IsMouseOver" Value="True">
+													<Setter Property="Background" Value="#1026A0DA"/>
+													<Setter Property="BorderBrush" Value="#A826A0DA"/>
+												</Trigger>
+												<Trigger Property="IsSelected" Value="True">
+													<Setter Property="Background" Value="#1026A0DA"/>
+													<Setter Property="BorderBrush" Value="#A826A0DA"/>
+												</Trigger>
+											</ControlTemplate.Triggers>
+										</ControlTemplate>
+									</Setter.Value>
+								</Setter>
+								<EventSetter Event="PreviewMouseUp" Handler="NoteSelected"/>
+							</Style>
+						</ListView.ItemContainerStyle>
 					</ListView>
 				</DataTemplate>
 			</TabControl.ContentTemplate>
-            <TabControl.Resources>
-                <Style TargetType="TextBox">
-                    <EventSetter Event="TextChanged" Handler="NoteTextChanged"/>
-                </Style>
-				<Style TargetType="ListViewItem">
-					<EventSetter Event="PreviewMouseUp" Handler="NoteSelected"/>
-				</Style>
-            </TabControl.Resources>
 		</TabControl>
 		<TextBox x:Name="SearchBox" HorizontalAlignment="Stretch" Margin="10,10,40,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="Auto" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" TextChanged="SearchTextChanged"/>
 		<Button x:Name="ArchiveMode" Content="📁" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="25" Height="25" Click="ArchiveModeClick" ToolTip="Switch to archive"/>
@@ -70,7 +119,7 @@
 		<Button x:Name="MoveCategoryTop" Content="⮅" HorizontalAlignment="Left" Margin="70,0,0,40" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryTopClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move to the top"/>
 		<Button x:Name="MoveCategoryBottom" Content="⮇" HorizontalAlignment="Left" Margin="70,0,0,10" VerticalAlignment="Bottom" Height="25" Click="MoveCategoryBottomClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move to the bottom"/>
 		<Label x:Name="NotesInCategory" HorizontalAlignment="Left" Margin="100,0,0,40" VerticalAlignment="Bottom" Height="25" Width="120"/>
-		<TextBox Text="{Binding SelectedItem.Name, ElementName=TabControl, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" Margin="100,0,0,10" TextWrapping="NoWrap" VerticalAlignment="Bottom" Width="120" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" MaxLines="1" MaxLength="18" TextChanged="CategoryNameChanged"/>
+		<TextBox Text="{Binding SelectedItem.Name, ElementName=TabControl, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" Margin="100,0,0,10" TextWrapping="NoWrap" VerticalAlignment="Bottom" Width="120" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" MaxLines="1" MaxLength="18"/>
 		<Button x:Name="CategoryColor" Content="" HorizontalAlignment="Left" Margin="225,0,0,10" VerticalAlignment="Bottom" Height="25" Width="25" Click="CategoryColorClick" ToolTip="Color"/>
 		<Button x:Name="MoveNoteTop" Content="⮅" HorizontalAlignment="Right" Margin="0,0,10,40" VerticalAlignment="Bottom" Height="25" Click="MoveNoteTopClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move to the top"/>
 		<Button x:Name="MoveNoteBottom" Content="⮇" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Height="25" Click="MoveNoteBottomClick" Width="25" VerticalContentAlignment="Center" ToolTip="Move to the bottom"/>
