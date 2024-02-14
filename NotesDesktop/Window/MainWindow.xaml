@@ -31,20 +31,16 @@
 				<Style TargetType="TabItem">
 					<Setter Property="Template">
 						<Setter.Value>
-							<ControlTemplate TargetType="{x:Type TabItem}">
-								<Grid SnapsToDevicePixels="True">
-									<Border x:Name="Border" BorderBrush="LightGray" BorderThickness="1,1,0,1" Padding="{TemplateBinding Padding}">
-										<ContentPresenter x:Name="Content" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+							<ControlTemplate TargetType="TabItem">
+								<Grid Background="White">
+									<Border x:Name="Border" BorderBrush="LightGray" BorderThickness="1,1,0,1" Padding="0">
+										<Border x:Name="InnerBorder" BorderBrush="Transparent" BorderThickness="0" Padding="{TemplateBinding Padding}">
+											<ContentPresenter x:Name="Content" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+											<Border.Background>
+												<SolidColorBrush Color="{Binding Color}" Opacity="0.3"/>
+											</Border.Background>
+										</Border>
 									</Border>
-									<Grid.Style>
-										<Style TargetType="{x:Type Grid}">
-					<Setter Property="Background">
-						<Setter.Value>
-							<SolidColorBrush Color="{Binding Color}" Opacity="0.3"/>
-						</Setter.Value>
-					</Setter>
-				</Style>
-									</Grid.Style>
 								</Grid>
 								<ControlTemplate.Triggers>
 									<MultiTrigger>
@@ -58,6 +54,7 @@
 									<Trigger Property="IsSelected" Value="True">
 										<Setter Property="Margin" Value="-2,-2,0,-2"/>
 										<Setter Property="Margin" TargetName="Content" Value="0,0,2,0"/>
+										<Setter Property="Panel.ZIndex" Value="1"/>
 									</Trigger>
 								</ControlTemplate.Triggers>
 							</ControlTemplate>
