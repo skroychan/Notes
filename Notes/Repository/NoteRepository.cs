@@ -11,9 +11,7 @@ namespace skroy.Notes.Repository;
 internal class NoteRepository
 {
 	private readonly Database database;
-
-	private Dictionary<long, Category> CategoriesCache { get; set; }
-	private Dictionary<long, Note> NotesCache { get; set; }
+	private readonly NoteCache cache;
 
 
 	public NoteRepository()
@@ -31,146 +29,113 @@ internal class NoteRepository
 
 		database.Initialize();
 
-		NotesCache = database.Select<Note>().ToDictionary(x => x.Id, x => x);
-		CategoriesCache = database.Select<Category>().ToDictionary(x => x.Id, x => x);
-		foreach (var category in CategoriesCache.Values)
-			category.Notes = new List<Note>();
-		foreach (var note in NotesCache.Values)
-			CategoriesCache[note.CategoryId].Notes.Add(note);
+		cache = new NoteCache(database.Select<Category>(), database.Select<Note>());		
 	}
 
 
 	public bool CreateNote(Note note)
 	{
-		if (!CategoriesCache.ContainsKey(note.CategoryId))
+		if (cache.GetCategory(note.CategoryId) == null)
 			return false;
 
-		var id = database.Insert(note);
-		note.Id = (long)id;
+		note.Id = (long)database.Insert(note);
 
-		NotesCache[note.Id] = note;
-		CategoriesCache[note.CategoryId].Notes.Add(note);
+		cache.AddNote(note);
 
 		return true;
 	}
 
 	public bool CreateCategory(Category category)
 	{
-		var id = database.Insert(category);
-		category.Id = (long)id;
+		category.Id = (long)database.Insert(category);
 
-		CategoriesCache[category.Id] = category;
+		cache.AddCategory(category);
 
 		return true;
 	}
 
 	public List<Category> GetAll()
 	{
-		return [.. CategoriesCache.Values];
+		return cache.GetAll().ToList();
 	}
 
 	public Category GetCategory(long categoryId)
 	{
-		return CategoriesCache[categoryId];
+		return cache.GetCategory(categoryId);
 	}
 
 	public Note GetNote(long noteId)
 	{
-		return NotesCache[noteId];
-	}
-
-	public bool UpdateNote(Note note)
-	{
-		if (!CategoriesCache.TryGetValue(note.CategoryId, out var category))
-			return false;
-
-		var affectedRows = database.Update(note);
-		if (affectedRows != 1)
-			return false;
-
-		var oldCategoryId = NotesCache[note.Id].CategoryId;
-		if (oldCategoryId != note.CategoryId)
-		{
-			CategoriesCache[oldCategoryId].Notes.Remove(note);
-			category.Notes.Add(note);
-		}
-
-		NotesCache[note.Id] = note;
-
-		return true;
+		return cache.GetNote(noteId);
 	}
 
 	public bool UpdateNote(long noteId, Expression<Action<Note>> updater)
 	{
-		var note = GetNote(noteId);
-		var oldCategoryId = note.CategoryId;
+		var note = cache.GetNote(noteId);
+		ApplyUpdater(note, updater);
 
-		updater.Compile()(note);
-
-		if (!CategoriesCache.TryGetValue(note.CategoryId, out var category))
+		if (cache.GetCategory(note.CategoryId) == null)
 			return false;
 
 		var affectedRows = database.Update(note, updater);
 		if (affectedRows != 1)
 			return false;
 
-		if (oldCategoryId != note.CategoryId)
-		{
-			CategoriesCache[oldCategoryId].Notes.RemoveAll(x => x.Id == noteId);
-			category.Notes.Add(note);
-		}
-
-		NotesCache[note.Id] = note;
+		cache.UpdateNote(note);
 
 		return true;
-	}
-
-	public bool UpdateCategory(Category category)
-	{
-		var affectedRows = database.Update(category);
-
-		CategoriesCache[category.Id] = category;
-
-		return affectedRows == 1;
 	}
 
 	public bool UpdateCategory(long categoryId, Expression<Action<Category>> updater)
 	{
 		var category = GetCategory(categoryId);
+		ApplyUpdater(category, updater);
+
 		var affectedRows = database.Update(category, updater);
+		if (affectedRows != 1)
+			return false;
 
-		updater.Compile()(category);
+		cache.UpdateCategory(category);
 
-		CategoriesCache[category.Id] = category;
-
-		return affectedRows == 1;
+		return true;
 	}
 
 	public bool DeleteNote(long noteId)
 	{
 		var affectedRows = database.Delete<Note>(x => x.Id == noteId);
+		if (affectedRows != 1)
+			return false;
 
-		NotesCache.Remove(noteId);
+		cache.DeleteNote(noteId);
 
-		return affectedRows == 1;
+		return true;
 	}
 
 	public bool DeleteCategory(long categoryId)
 	{
-		var category = CategoriesCache[categoryId];
-		var keysToDelete = NotesCache
-			.Where(x => x.Value.CategoryId == category.Id)
-			.Select(x => x.Key)
-			.ToList();
-		foreach (var key in keysToDelete)
-			NotesCache.Remove(key);
-
-		var affectedRows = database.Delete<Note>(x => x.CategoryId == category.Id);
-		if (affectedRows != keysToDelete.Count)
+		var notesCount = cache.GetCategory(categoryId).Notes.Count;
+		var affectedRows = database.Delete<Note>(x => x.CategoryId == categoryId);
+		if (affectedRows != notesCount)
 			return false;
 
-		CategoriesCache.Remove(categoryId);
+		affectedRows = database.Delete<Category>(x => x.Id == categoryId);
+		if (affectedRows != 1)
+			return false;
 
-		return database.Delete(category) == 1;
+		cache.DeleteCategory(categoryId);
+
+		return true;
+	}
+
+
+	private static void ApplyUpdater<T>(T obj, Expression<Action<T>> updater)
+	{
+		foreach (var binding in ((MemberInitExpression)updater.Body).Bindings)
+		{
+			var assignment = ((MemberAssignment)binding).Expression;
+			var member = binding.Member.Name;
+			var value = Expression.Lambda(assignment).Compile().DynamicInvoke();
+			typeof(T).GetProperty(member).SetValue(obj, value);
+		}
 	}
 }
