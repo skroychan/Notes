@@ -1,4 +1,4 @@
-﻿<Application x:Class="NotesDesktop.App"
+﻿<Application x:Class="skroy.NotesDesktop.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="Window\MainWindow.xaml">
