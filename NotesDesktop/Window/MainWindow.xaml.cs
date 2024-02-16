@@ -73,15 +73,19 @@ public partial class MainWindow : Window
 				return;
 		}
 
+		CategoryUpdateTimers.Remove(SelectedCategory.Id, out var categoryTimer);
+		categoryTimer?.Stop();
+		foreach (var note in SelectedCategory.Notes)
+		{
+			NoteUpdateTimers.Remove(note.Id, out var noteTimer);
+			noteTimer?.Stop();
+		}
+
 		if (!controller.DeleteCategory(SelectedCategory.Id))
 			return;
 
 		var selectedIndex = Categories.IndexOf(SelectedCategory);
 		Categories.Remove(SelectedCategory);
-
-		CategoryUpdateTimers.Remove(SelectedCategory.Id);
-		foreach (var note in SelectedCategory.Notes)
-			NoteUpdateTimers.Remove(note.Id);
 
 		TabControl.SelectedIndex = Math.Max(0, selectedIndex - 1);
 
@@ -130,10 +134,11 @@ public partial class MainWindow : Window
 				return;
 		}
 
+		NoteUpdateTimers.Remove(SelectedNote.Id, out var noteTimer);
+		noteTimer?.Stop();
+
 		if (!controller.DeleteNote(SelectedNote.Id))
 			return;
-
-		NoteUpdateTimers.Remove(SelectedNote.Id);
 
 		SelectedCategory.Notes.Remove(SelectedNote);
 
@@ -390,6 +395,10 @@ public partial class MainWindow : Window
 
 	private void ChangeNoteStorage(NoteStorage targetStorage)
 	{
+		NoteUpdateTimers.Remove(SelectedNote.Id, out var noteTimer);
+		if (noteTimer != null)
+			UpdateNoteCallback(noteTimer);
+
 		if (!controller.ChangeNoteStorage(SelectedNote.Id, targetStorage))
 			return;
 
@@ -512,10 +521,12 @@ public partial class MainWindow : Window
 	private void UpdateNoteCallback(NoteUpdateTimer timer)
 	{
 		controller.SetNoteText(timer.Id, timer.Text);
+		timer.Stop();
 	}
 
 	private void UpdateCategoryCallback(CategoryUpdateTimer timer)
 	{
 		controller.SetCategoryName(timer.Id, timer.Name);
+		timer.Stop();
 	}
 }
