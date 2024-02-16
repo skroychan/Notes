@@ -53,7 +53,18 @@ public class NoteService
 
 	public IEnumerable<Category> GetAll()
 	{
-		return repository.GetAll();
+		var categories = repository.GetAll();
+		for (var i = 0; i < categories.Count; i++)
+		{
+			if (categories[i].Notes.Count == 0)
+				continue;
+
+			categories[i].Notes = categories[i].Notes.FindAll(note => note.Storage == CurrentStorage);
+			if (categories[i].Notes.Count == 0)
+				categories.Remove(categories[i--]);
+		}
+
+		return categories;
 	}
 
 	public IEnumerable<Category> Search(string query, bool ignoreCase = false)
@@ -109,7 +120,6 @@ public class NoteService
 
 	public bool SetNoteColor(long noteId, string hexColor)
 	{
-		var note = repository.GetNote(noteId);
 		return repository.UpdateNote(noteId, _ => new Note
 		{
 			Color = hexColor
