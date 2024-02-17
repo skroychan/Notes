@@ -67,7 +67,8 @@ internal class NoteCache
 			throw new ArgumentException($"Cannot find note with Id={note.Id}.");
 
 		var newNote = GetCopy(note);
-		category.Notes[category.Notes.IndexOf(oldNote)] = newNote;
+		var oldNoteIndex = category.Notes.FindIndex(x => x.Id == oldNote.Id);
+		category.Notes[oldNoteIndex] = newNote;
 		if (note.CategoryId != oldNote.CategoryId)
 		{
 			CategoriesCache[oldNote.CategoryId].Notes.Remove(oldNote);
