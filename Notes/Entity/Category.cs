@@ -9,5 +9,6 @@ public class Category
 	public string Name { get; set; }
 	public List<Note> Notes { get; set; }
 	public string Color { get; set; }
+	public long Order { get; set; }
 	public DateTime? CreationDate { get; set; }
 }

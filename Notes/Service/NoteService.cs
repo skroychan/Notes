@@ -22,10 +22,12 @@ public class NoteService
 
 	public Category CreateCategory()
 	{
+		var count = repository.GetAll().Count;
 		var newCategory = new Category()
 		{
 			Name = string.Empty,
-			Notes = new List<Note>(),
+			Notes = [],
+			Order = count,
 			CreationDate = DateTime.Now
 		};
 
@@ -37,11 +39,13 @@ public class NoteService
 
 	public Note CreateNote(long categoryId)
 	{
+		var count = repository.GetCategory(categoryId).Notes.Count;
 		var newNote = new Note()
 		{
 			Text = string.Empty,
 			CategoryId = categoryId,
 			Storage = CurrentStorage,
+			Order = count,
 			CreationDate = DateTime.Now
 		};
 
@@ -93,12 +97,54 @@ public class NoteService
 
 	public bool ReorderCategory(long categoryId, int newPosition)
 	{
-		return false;
+		var result = true;
+		var category = repository.GetCategory(categoryId);
+		if (category.Order == newPosition)
+			return true;
+
+		var categories = repository.GetAll();
+		if (newPosition > category.Order)
+		{
+			categories = categories.Where(x => x.Order > category.Order && x.Order <= newPosition).ToList();
+			foreach (var cat in categories)
+				result &= repository.UpdateCategory(cat.Id, _ => new Category { Order = cat.Order - 1 });
+		}
+		else
+		{
+			categories = categories.Where(x => x.Order >= newPosition && x.Order < category.Order).ToList();
+			foreach (var cat in categories)
+				result &= repository.UpdateCategory(cat.Id, _ => new Category { Order = cat.Order + 1 });
+		}
+
+		result &= repository.UpdateCategory(category.Id, _ => new Category { Order = newPosition });
+
+		return result;
 	}
 
 	public bool ReorderNote(long noteId, int newPosition)
 	{
-		return false;
+		var result = true;
+		var note = repository.GetNote(noteId);
+		if (note.Order == newPosition)
+			return true;
+
+		var categoryNotes = repository.GetCategory(note.CategoryId).Notes;
+		if (newPosition > note.Order)
+		{
+			categoryNotes = categoryNotes.Where(x => x.Order > note.Order && x.Order <= newPosition).ToList();
+			foreach (var categoryNote in categoryNotes)
+				result &= repository.UpdateNote(categoryNote.Id, _ => new Note { Order = categoryNote.Order - 1 });
+		}
+		else
+		{
+			categoryNotes = categoryNotes.Where(x => x.Order >= newPosition && x.Order < note.Order).ToList();
+			foreach (var categoryNote in categoryNotes)
+				result &= repository.UpdateNote(categoryNote.Id, _ => new Note { Order = categoryNote.Order + 1 });
+		}
+
+		result &= repository.UpdateNote(note.Id, _ => new Note { Order = newPosition });
+
+		return result;
 	}
 
 	public bool SetNoteCategory(long noteId, long toCategoryId)

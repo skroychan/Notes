@@ -117,6 +117,7 @@ internal class NoteCache
 			Color = note.Color,
 			CategoryId = note.CategoryId,
 			Storage = note.Storage,
+			Order = note.Order,
 			CreationDate = note.CreationDate,
 			ModificationDate = note.ModificationDate,
 			ArchiveDate = note.ArchiveDate
@@ -131,6 +132,7 @@ internal class NoteCache
 			Name = category.Name,
 			Notes = category.Notes.Select(GetCopy).ToList(),
 			Color = category.Color,
+			Order = category.Order,
 			CreationDate = category.CreationDate
 		};
 	}

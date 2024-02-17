@@ -97,8 +97,7 @@ public class NoteController
 
 	private CategoryModel ToModel(Category category)
 	{
-		if (category.Color == null)
-			category.Color = SystemColors.ControlBrush.ToString();
+		category.Color ??= SystemColors.ControlBrush.ToString();
 
 		return new CategoryModel
 		{
@@ -106,6 +105,7 @@ public class NoteController
 			Name = category.Name,
 			CreationDate = category.CreationDate,
 			Color = category.Color,
+			Order = category.Order,
 			Notes = category.Notes.Select(ToModel).ToList()
 		};
 	}
@@ -119,6 +119,7 @@ public class NoteController
 			Color = note.Color,
 			CategoryId = note.CategoryId,
 			Storage = Enum.Parse<NoteStorage>(note.Storage),
+			Order = note.Order,
 			CreationDate = note.CreationDate,
 			ModificationDate = note.ModificationDate,
 			ArchiveDate = note.ArchiveDate

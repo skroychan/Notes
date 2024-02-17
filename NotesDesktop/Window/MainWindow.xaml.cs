@@ -31,7 +31,7 @@ public partial class MainWindow : Window
 		CategoryUpdateTimers = [];
 		NoteUpdateTimers = [];
 
-		Categories = controller.GetAll().ToList();
+		Categories = GetAll();
 
 		InitializeComponent();
 
@@ -87,10 +87,10 @@ public partial class MainWindow : Window
 		var selectedIndex = Categories.IndexOf(SelectedCategory);
 		Categories.Remove(SelectedCategory);
 
-		TabControl.SelectedIndex = Math.Max(0, selectedIndex - 1);
-
 		OnCategoryListUpdated();
 		DeselectNote();
+
+		TabControl.SelectedIndex = Math.Max(0, selectedIndex - 1);
 	}
 
 	private void MoveCategoryUpClick(object sender, RoutedEventArgs e)
@@ -356,7 +356,7 @@ public partial class MainWindow : Window
 			info.Add($"Created: {SelectedNote.CreationDate}");
 		if (SelectedNote.ModificationDate != null)
 			info.Add($"Edited: {SelectedNote.ModificationDate}");
-		if (info.Any())
+		if (info.Count != 0)
 			tooltip = string.Join('\n', info);
 
 		LastModified.Content = (SelectedNote.CreationDate ?? SelectedNote.ModificationDate).ToString() ?? "";
@@ -473,9 +473,14 @@ public partial class MainWindow : Window
 
 	private void Reload()
 	{
-		Categories = controller.GetAll().ToList();
+		Categories = GetAll();
 		OnCategoryListUpdated();
 		OnNoteListUpdated();
+	}
+
+	private List<CategoryModel> GetAll()
+	{
+		return [.. controller.GetAll().Select(x => { x.Notes = [.. x.Notes.OrderBy(x => x.Order)]; return x; }).OrderBy(x => x.Order)];
 	}
 
 	private void UpdateNote()
