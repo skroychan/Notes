@@ -64,7 +64,7 @@
 			</TabControl.ItemContainerStyle>
 			<TabControl.ContentTemplate>
 				<DataTemplate>
-					<ListView ItemsSource="{Binding Notes}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" SelectionMode="Single">
+					<ListView ItemsSource="{Binding Notes}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" SelectionMode="Single" Loaded="ListViewLoaded">
 						<ListView.ItemTemplate>
 							<DataTemplate>
 								<TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" BorderThickness="0" Padding="4,2,4,2" TextChanged="NoteTextChanged">

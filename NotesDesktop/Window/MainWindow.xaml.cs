@@ -16,6 +16,7 @@ public partial class MainWindow : Window
 {
 	private readonly NoteController controller;
 
+	private ListView ListView { get; set; }
 	private CategoryModel SelectedCategory { get; set; }
 	private NoteModel SelectedNote { get; set; }
 	private Dictionary<long, CategoryUpdateTimer> CategoryUpdateTimers { get; set; }
@@ -119,6 +120,7 @@ public partial class MainWindow : Window
 		SelectedCategory.Notes.Insert(selectedIndex + 1, newNote);
 
 		OnNoteListUpdated();
+		FocusOnNote(newNote);
 	}
 
 	private void RemoveNoteClick(object sender, RoutedEventArgs e)
@@ -140,10 +142,11 @@ public partial class MainWindow : Window
 		if (!controller.DeleteNote(SelectedNote.Id))
 			return;
 
+		var lastSelectedIndex = ListView.SelectedIndex;
 		SelectedCategory.Notes.Remove(SelectedNote);
 
-		DeselectNote();
 		OnNoteListUpdated();
+		FocusOnNoteIfAny(lastSelectedIndex);
 	}
 
 	private void ArchiveNoteClick(object sender, RoutedEventArgs e)
@@ -198,12 +201,14 @@ public partial class MainWindow : Window
 		var destinationCategory = (CategoryModel)MoveDestination.SelectedItem;
 		controller.ChangeNoteCategory(SelectedNote.Id, destinationCategory.Id);
 
+		var lastSelectedIndex = SelectedCategory.Notes.IndexOf(SelectedNote);
 		SelectedCategory.Notes.Remove(SelectedNote);
 		destinationCategory.Notes.Add(SelectedNote);
 
 		DeselectNote();
 		OnNoteListUpdated();
 		UpdateCategoryNoteCount();
+		FocusOnNoteIfAny(lastSelectedIndex);
 	}
 
 	private void NoteColorClick(object sender, RoutedEventArgs e)
@@ -263,6 +268,11 @@ public partial class MainWindow : Window
 			controller.SetNoteText(timer.Id, timer.Text);
 	}
 
+	private void ListViewLoaded(object sender, RoutedEventArgs e)
+	{
+		ListView = (ListView)sender;
+	}
+
 	private void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
 	{
 		if (e.OriginalSource != TabControl)
@@ -313,14 +323,19 @@ public partial class MainWindow : Window
 	{
 		var item = (ListViewItem)sender;
 		item.IsSelected = true;
-		SelectedNote = (NoteModel)item.Content;
+		SelectNote((NoteModel)item.Content);
+	}
+
+	#endregion
+
+	private void SelectNote(NoteModel item)
+	{
+		SelectedNote = item;
 		SelectedID.Content = $"#{SelectedNote.Id}";
 		ChangeNoteCategory.IsEnabled = true;
 		UpdateLastModifiedText();
 		SetNoteColor();
 	}
-
-	#endregion
 
 	private void DeselectNote()
 	{
@@ -329,6 +344,26 @@ public partial class MainWindow : Window
 		LastModified.Content = string.Empty;
 		ChangeNoteCategory.IsEnabled = false;
 		SetNoteColor();
+	}
+
+	private void FocusOnNote(NoteModel note)
+	{
+		ListView.SelectedItem = note;
+		SelectNote(note);
+		ListView.UpdateLayout();
+		var listViewItem = (ListViewItem)ListView.ItemContainerGenerator.ContainerFromItem(ListView.SelectedItem);
+		listViewItem.FindChild<TextBox>().Focus();
+	}
+
+	private void FocusOnNoteIfAny(int lastSelectedIndex)
+	{
+		if (SelectedCategory.Notes.Count != 0)
+		{
+			var newIndex = Math.Clamp(lastSelectedIndex, 0, ListView.Items.Count - 1);
+			FocusOnNote((NoteModel)ListView.Items[newIndex]);
+		}
+		else
+			DeselectNote();
 	}
 
 	private void UpdateWindowTitle()
@@ -391,6 +426,7 @@ public partial class MainWindow : Window
 		SelectedCategory.Notes.Remove(SelectedNote);
 		SelectedCategory.Notes.Insert(newPosition, SelectedNote);
 		OnNoteUpdated();
+		FocusOnNote(SelectedNote);
 	}
 
 	private void ChangeNoteStorage(NoteStorage targetStorage)
@@ -402,9 +438,10 @@ public partial class MainWindow : Window
 		if (!controller.ChangeNoteStorage(SelectedNote.Id, targetStorage))
 			return;
 
+		var lastSelectedIndex = SelectedCategory.Notes.IndexOf(SelectedNote);
 		SelectedCategory.Notes.Remove(SelectedNote);
-		DeselectNote();
 		OnNoteListUpdated();
+		FocusOnNoteIfAny(lastSelectedIndex);
 	}
 
 	private void ChangeStorage(NoteStorage targetStorage)
