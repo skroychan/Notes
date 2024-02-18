@@ -71,9 +71,15 @@ public class NoteService
 		return categories;
 	}
 
-	public IEnumerable<Category> Search(string query, bool ignoreCase = false)
+	public IEnumerable<Category> Search(string query)
 	{
-		throw new NotImplementedException();
+		return repository.GetAll()
+			.Select(x =>
+			{
+				x.Notes = x.Notes.FindAll(note => note.Text.Contains(query, StringComparison.InvariantCultureIgnoreCase));
+				return x;
+			})
+			.Where(x => x.Notes.Count > 0);
 	}
 
 	public bool DeleteCategory(long categoryId)
