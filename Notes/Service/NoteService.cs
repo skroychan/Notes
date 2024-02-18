@@ -10,20 +10,19 @@ public class NoteService
 {
 	private readonly NoteRepository repository;
 
-	private string CurrentStorage { get; set; }
+	private long CurrentStorageId { get; set; }
 
 
 	public NoteService()
 	{
 		repository = new NoteRepository();
-		CurrentStorage = "Main";
 	}
 
 
 	public Category CreateCategory()
 	{
-		var count = repository.GetAll().Count;
-		var newCategory = new Category()
+		var count = repository.GetAll().Count();
+		var newCategory = new Category
 		{
 			Name = string.Empty,
 			Notes = [],
@@ -32,7 +31,7 @@ public class NoteService
 		};
 
 		if (!repository.CreateCategory(newCategory))
-			throw new Exception("Failed to create category.");
+			return null;
 
 		return newCategory;
 	}
@@ -40,35 +39,53 @@ public class NoteService
 	public Note CreateNote(long categoryId)
 	{
 		var count = repository.GetCategory(categoryId).Notes.Count;
-		var newNote = new Note()
+		var newNote = new Note
 		{
 			Text = string.Empty,
 			CategoryId = categoryId,
-			Storage = CurrentStorage,
+			StorageId = CurrentStorageId,
 			Order = count,
 			CreationDate = DateTime.Now
 		};
 
 		if (!repository.CreateNote(newNote))
-			throw new Exception("Failed to create note.");
+			return null;
 
 		return newNote;
 	}
 
+	public Storage CreateStorage(string name)
+	{
+		var newStorage = new Storage
+		{
+			Name = name
+		};
+
+		if (!repository.CreateStorage(newStorage))
+			return null;
+
+		return newStorage;
+	}
+
 	public IEnumerable<Category> GetAll()
 	{
-		var categories = repository.GetAll();
+		var categories = repository.GetAll().ToList();
 		for (var i = 0; i < categories.Count; i++)
 		{
 			if (categories[i].Notes.Count == 0)
 				continue;
 
-			categories[i].Notes = categories[i].Notes.FindAll(note => note.Storage == CurrentStorage);
+			categories[i].Notes = categories[i].Notes.FindAll(note => note.StorageId == CurrentStorageId);
 			if (categories[i].Notes.Count == 0)
 				categories.Remove(categories[i--]);
 		}
 
 		return categories;
+	}
+
+	public IEnumerable<Storage> GetAllStorages()
+	{
+		return repository.GetAllStorages();
 	}
 
 	public IEnumerable<Category> Search(string query)
@@ -86,7 +103,7 @@ public class NoteService
 	{
 		var result = true;
 		var category = repository.GetCategory(categoryId);
-		var currentStorageNotes = category.Notes.Where(x => x.Storage == CurrentStorage).ToList();
+		var currentStorageNotes = category.Notes.Where(x => x.StorageId == CurrentStorageId).ToList();
 		foreach (var note in currentStorageNotes)
 			result &= repository.DeleteNote(note.Id);
 
@@ -180,9 +197,10 @@ public class NoteService
 
 	public bool SetNoteStorage(long noteId, string targetStorage)
 	{
+		var targetStorageId = GetStorageIdByName(targetStorage);
 		return repository.UpdateNote(noteId, _ => new Note
 		{
-			Storage = targetStorage
+			StorageId = targetStorageId
 		});
 	}
 
@@ -202,8 +220,14 @@ public class NoteService
 		});
 	}
 
-	public void SetCurrentStorage(string storage)
+	public void SetCurrentStorage(string storageName)
 	{
-		CurrentStorage = storage;
+		CurrentStorageId = GetStorageIdByName(storageName);
+	}
+
+
+	private long GetStorageIdByName(string storageName)
+	{
+		return repository.GetAllStorages().Single(x => x.Name == storageName).Id;
 	}
 }

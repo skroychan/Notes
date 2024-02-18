@@ -9,12 +9,14 @@ internal class NoteCache
 {
 	private Dictionary<long, Category> CategoriesCache { get; set; }
 	private Dictionary<long, Note> NotesCache { get; set; }
+	private Dictionary<long, Storage> StoragesCache { get; set; }
 
 
-	public NoteCache(IEnumerable<Category> categories, IEnumerable<Note> notes)
+	public NoteCache(IEnumerable<Category> categories, IEnumerable<Note> notes, IEnumerable<Storage> storages)
 	{
 		NotesCache = notes.ToDictionary(x => x.Id, x => x);
 		CategoriesCache = categories.ToDictionary(x => x.Id, x => x);
+		StoragesCache = storages.ToDictionary(x => x.Id, x => x);
 		foreach (var category in CategoriesCache.Values)
 			category.Notes = [];
 		foreach (var note in NotesCache.Values)
@@ -25,6 +27,11 @@ internal class NoteCache
 	public IEnumerable<Category> GetAll()
 	{
 		return CategoriesCache.Values.Select(GetCopy);
+	}
+
+	public IEnumerable<Storage> GetStorages()
+	{
+		return StoragesCache.Values.Select(GetCopy);
 	}
 
 	public Category GetCategory(long categoryId)
@@ -56,6 +63,11 @@ internal class NoteCache
 	public void AddCategory(Category category)
 	{
 		CategoriesCache[category.Id] = GetCopy(category);
+	}
+
+	public void AddStorage(Storage storage)
+	{
+		StoragesCache[storage.Id] = GetCopy(storage);
 	}
 
 	public void UpdateNote(Note note)
@@ -117,7 +129,7 @@ internal class NoteCache
 			Text = note.Text,
 			Color = note.Color,
 			CategoryId = note.CategoryId,
-			Storage = note.Storage,
+			StorageId = note.StorageId,
 			Order = note.Order,
 			CreationDate = note.CreationDate,
 			ModificationDate = note.ModificationDate,
@@ -135,6 +147,15 @@ internal class NoteCache
 			Color = category.Color,
 			Order = category.Order,
 			CreationDate = category.CreationDate
+		};
+	}
+
+	private Storage GetCopy(Storage storage)
+	{
+		return new Storage
+		{
+			Id = storage.Id,
+			Name = storage.Name
 		};
 	}
 }

@@ -16,6 +16,12 @@ public class NoteController
 	public NoteController()
 	{
 		NoteService = new NoteService();
+
+		var missingStorages = Enum.GetNames(typeof(NoteStorage)).Except(NoteService.GetAllStorages().Select(x => x.Name));
+		foreach (var storage in missingStorages)
+			NoteService.CreateStorage(storage);
+
+		NoteService.SetCurrentStorage("Main");
 	}
 
 
@@ -112,13 +118,17 @@ public class NoteController
 
 	private NoteModel ToModel(Note note)
 	{
+		var storage = NoteService.GetAllStorages().Single(x => x.Id == note.StorageId);
+		if (!Enum.TryParse<NoteStorage>(storage.Name, out var noteStorage))
+			throw new ArgumentException($"Storage {storage.Name} is not supported.");
+
 		return new NoteModel
 		{
 			Id = note.Id,
 			Text = note.Text,
 			Color = note.Color,
 			CategoryId = note.CategoryId,
-			Storage = Enum.Parse<NoteStorage>(note.Storage),
+			Storage = noteStorage,
 			Order = note.Order,
 			CreationDate = note.CreationDate,
 			ModificationDate = note.ModificationDate,

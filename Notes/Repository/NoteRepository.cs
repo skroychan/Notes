@@ -20,16 +20,19 @@ internal class NoteRepository
 		var dbPath = Path.Combine(appDataPath, "skroy", "Notes", "notes.db");
 		database = Database.GetSqliteDatabase($"Data Source={dbPath};");
 
-		var categoryMappingBuilder = database.GetMappingBuilder<Category>()
-			.Ignore(x => x.Notes);
+		var categoryMappingBuilder = database.GetMappingBuilder<Category>();
+		var storageMappingBuilder = database.GetMappingBuilder<Storage>();
 		var noteMappingBuilder = database.GetMappingBuilder<Note>();
 
+		categoryMappingBuilder.Ignore(x => x.Notes);
+
 		database.AddMapping(categoryMappingBuilder);
+		database.AddMapping(storageMappingBuilder);
 		database.AddMapping(noteMappingBuilder);
 
 		database.Initialize();
 
-		cache = new NoteCache(database.Select<Category>(), database.Select<Note>());		
+		cache = new NoteCache(database.Select<Category>(), database.Select<Note>(), database.Select<Storage>());		
 	}
 
 
@@ -54,9 +57,23 @@ internal class NoteRepository
 		return true;
 	}
 
-	public List<Category> GetAll()
+	public bool CreateStorage(Storage storage)
+	{
+		storage.Id = (long)database.Insert(storage);
+
+		cache.AddStorage(storage);
+
+		return true;
+	}
+
+	public IEnumerable<Category> GetAll()
 	{
 		return cache.GetAll().ToList();
+	}
+
+	public IEnumerable<Storage> GetAllStorages()
+	{
+		return cache.GetStorages();
 	}
 
 	public Category GetCategory(long categoryId)

@@ -8,7 +8,7 @@ public class Note
 	public string Text { get; set; }
 	public string Color { get; set; }
 	public long CategoryId { get; set; }
-	public string Storage { get; set; }
+	public long StorageId { get; set; }
 	public long Order { get; set; }
 	public DateTime? CreationDate { get; set; }
     public DateTime? ModificationDate { get; set; }
