@@ -46,14 +46,14 @@ public partial class MainWindow : Window
 	{
 		var newCategory = controller.CreateCategory();
 		if (newCategory == null)
-			return;
+			throw new Exception("Failed to create category.");
 
 		if (controller.SetCategoryName(newCategory.Id, "New"))
 			newCategory.Name = "New";
 
 		var selectedIndex = Categories.IndexOf(SelectedCategory);
-		if (selectedIndex <= Categories.Count - 1)
-			controller.ReorderCategory(newCategory.Id, selectedIndex + 1);
+		if (!controller.ReorderCategory(newCategory.Id, selectedIndex + 1))
+			throw new Exception($"Failed to reorder category to position={selectedIndex + 1}.");
 		Categories.Insert(selectedIndex + 1, newCategory);
 
 		TabControl.SelectedIndex = selectedIndex + 1;
@@ -83,7 +83,7 @@ public partial class MainWindow : Window
 		}
 
 		if (!controller.DeleteCategory(SelectedCategory.Id))
-			return;
+			throw new Exception("Failed to delete category.");
 
 		var selectedIndex = Categories.IndexOf(SelectedCategory);
 		Categories.Remove(SelectedCategory);
@@ -113,10 +113,11 @@ public partial class MainWindow : Window
 
 		var newNote = controller.CreateNote(SelectedCategory.Id);
 		if (newNote == null)
-			return;
+			throw new Exception("Failed to create note.");
 
 		var selectedIndex = SelectedCategory.Notes.IndexOf(SelectedNote);
-		controller.ReorderNote(newNote.Id, selectedIndex + 1);
+		if (!controller.ReorderNote(newNote.Id, selectedIndex + 1))
+			throw new Exception($"Failed to reorder note to position={selectedIndex + 1}.");
 		SelectedCategory.Notes.Insert(selectedIndex + 1, newNote);
 
 		OnNoteListUpdated();
@@ -140,7 +141,7 @@ public partial class MainWindow : Window
 		noteTimer?.Stop();
 
 		if (!controller.DeleteNote(SelectedNote.Id))
-			return;
+			throw new Exception("Failed to delete note.");
 
 		var lastSelectedIndex = ListView.SelectedIndex;
 		SelectedCategory.Notes.Remove(SelectedNote);
@@ -199,7 +200,8 @@ public partial class MainWindow : Window
 			return;
 
 		var destinationCategory = (CategoryModel)MoveDestination.SelectedItem;
-		controller.ChangeNoteCategory(SelectedNote.Id, destinationCategory.Id);
+		if (!controller.ChangeNoteCategory(SelectedNote.Id, destinationCategory.Id))
+			throw new Exception("Failed to change note's category.");
 
 		var lastSelectedIndex = SelectedCategory.Notes.IndexOf(SelectedNote);
 		SelectedCategory.Notes.Remove(SelectedNote);
@@ -216,8 +218,10 @@ public partial class MainWindow : Window
 		var colorDialog = new System.Windows.Forms.ColorDialog();
 		if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
 		{
-			SelectedNote.Color = ColorUtils.ToHexString(colorDialog.Color);
-			controller.SetNoteColor(SelectedNote.Id, SelectedNote.Color);
+			var color = ColorUtils.ToHexString(colorDialog.Color);
+			if (!controller.SetNoteColor(SelectedNote.Id, color))
+				throw new Exception("Failed to set note's color.");
+			SelectedNote.Color = color;
 			SetNoteColor();
 			OnNoteUpdated();
 		}
@@ -228,8 +232,10 @@ public partial class MainWindow : Window
 		var colorDialog = new System.Windows.Forms.ColorDialog();
 		if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
 		{
-			SelectedCategory.Color = ColorUtils.ToHexString(colorDialog.Color);
-			controller.SetCategoryColor(SelectedCategory.Id, SelectedCategory.Color);
+			var color = ColorUtils.ToHexString(colorDialog.Color);
+			if (!controller.SetCategoryColor(SelectedCategory.Id, color))
+				throw new Exception("Failed to set category's color.");
+			SelectedCategory.Color = color;
 			SetCategoryColor();
 			OnCategoryUpdated();
 		}
@@ -262,10 +268,12 @@ public partial class MainWindow : Window
 	private void WindowClosing(object sender, CancelEventArgs e)
 	{
 		foreach (var timer in CategoryUpdateTimers.Values)
-			controller.SetCategoryName(timer.Id, timer.Name);
+			if (!controller.SetCategoryName(timer.Id, timer.Name))
+				throw new Exception($"Failed to save category Id={timer.Id}.");
 
 		foreach (var timer in NoteUpdateTimers.Values)
-			controller.SetNoteText(timer.Id, timer.Text);
+			if (!controller.SetNoteText(timer.Id, timer.Text))
+				throw new Exception($"Failed to save note Id={timer.Id}.");
 	}
 
 	private void ListViewLoaded(object sender, RoutedEventArgs e)
@@ -406,7 +414,8 @@ public partial class MainWindow : Window
 		if (newPosition < 0 || newPosition >= TabControl.Items.Count)
 			return;
 
-		controller.ReorderCategory(SelectedCategory.Id, newPosition);
+		if (!controller.ReorderCategory(SelectedCategory.Id, newPosition))
+			throw new Exception($"Failed to reorder category to position={newPosition}.");
 
 		Categories.RemoveAt(TabControl.SelectedIndex);
 		Categories.Insert(newPosition, SelectedCategory);
@@ -421,7 +430,8 @@ public partial class MainWindow : Window
 		if (newPosition < 0 || newPosition >= SelectedCategory.Notes.Count)
 			return;
 
-		controller.ReorderNote(SelectedNote.Id, newPosition);
+		if (!controller.ReorderNote(SelectedNote.Id, newPosition))
+			throw new Exception($"Failed to reorder note to position={newPosition}.");
 
 		SelectedCategory.Notes.Remove(SelectedNote);
 		SelectedCategory.Notes.Insert(newPosition, SelectedNote);
@@ -436,7 +446,7 @@ public partial class MainWindow : Window
 			UpdateNoteCallback(noteTimer);
 
 		if (!controller.ChangeNoteStorage(SelectedNote.Id, targetStorage))
-			return;
+			throw new Exception($"Failed to move note to storage={targetStorage}.");
 
 		var lastSelectedIndex = SelectedCategory.Notes.IndexOf(SelectedNote);
 		SelectedCategory.Notes.Remove(SelectedNote);
@@ -562,13 +572,15 @@ public partial class MainWindow : Window
 
 	private void UpdateNoteCallback(NoteUpdateTimer timer)
 	{
-		controller.SetNoteText(timer.Id, timer.Text);
+		if (!controller.SetNoteText(timer.Id, timer.Text))
+			throw new Exception($"Failed to update note Id={timer.Id}.");
 		timer.Stop();
 	}
 
 	private void UpdateCategoryCallback(CategoryUpdateTimer timer)
 	{
-		controller.SetCategoryName(timer.Id, timer.Name);
+		if (!controller.SetCategoryName(timer.Id, timer.Name))
+			throw new Exception($"Failed to update category Id={timer.Id}.");
 		timer.Stop();
 	}
 }
