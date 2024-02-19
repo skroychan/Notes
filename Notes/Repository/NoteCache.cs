@@ -72,19 +72,21 @@ internal class NoteCache
 
 	public void UpdateNote(Note note)
 	{
-		if (!CategoriesCache.TryGetValue(note.CategoryId, out Category category))
-			throw new ArgumentException($"Note with Id={note.Id} references category with Id={note.CategoryId} which does not exist.");
-
 		if (!NotesCache.TryGetValue(note.Id, out var oldNote))
 			throw new ArgumentException($"Cannot find note with Id={note.Id}.");
 
+		var oldCategory = CategoriesCache[oldNote.CategoryId];
 		var newNote = GetCopy(note);
-		var oldNoteIndex = category.Notes.FindIndex(x => x.Id == oldNote.Id);
-		category.Notes[oldNoteIndex] = newNote;
-		if (note.CategoryId != oldNote.CategoryId)
+		var oldNoteIndex = oldCategory.Notes.FindIndex(x => x.Id == oldNote.Id);
+		if (note.CategoryId == oldNote.CategoryId)
+			oldCategory.Notes[oldNoteIndex] = newNote;
+		else
 		{
-			CategoriesCache[oldNote.CategoryId].Notes.Remove(oldNote);
-			category.Notes.Add(newNote);
+			if (!CategoriesCache.TryGetValue(note.CategoryId, out Category newCategory))
+				throw new ArgumentException($"Note with Id={note.Id} references category with Id={note.CategoryId} which does not exist.");
+
+			oldCategory.Notes.Remove(oldNote);
+			newCategory.Notes.Add(newNote);
 		}
 
 		NotesCache[note.Id] = newNote;
