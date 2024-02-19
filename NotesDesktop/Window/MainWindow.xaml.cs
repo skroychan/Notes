@@ -74,13 +74,9 @@ public partial class MainWindow : Window
 				return;
 		}
 
-		CategoryUpdateTimers.Remove(SelectedCategory.Id, out var categoryTimer);
-		categoryTimer?.Stop();
+		RemoveCategoryTimer(SelectedCategory.Id);
 		foreach (var note in SelectedCategory.Notes)
-		{
-			NoteUpdateTimers.Remove(note.Id, out var noteTimer);
-			noteTimer?.Stop();
-		}
+			RemoveNoteTimer(note.Id);
 
 		if (!controller.DeleteCategory(SelectedCategory.Id))
 			throw new Exception("Failed to delete category.");
@@ -137,8 +133,7 @@ public partial class MainWindow : Window
 				return;
 		}
 
-		NoteUpdateTimers.Remove(SelectedNote.Id, out var noteTimer);
-		noteTimer?.Stop();
+		RemoveNoteTimer(SelectedNote.Id);
 
 		if (!controller.DeleteNote(SelectedNote.Id))
 			throw new Exception("Failed to delete note.");
@@ -269,11 +264,11 @@ public partial class MainWindow : Window
 	{
 		foreach (var timer in CategoryUpdateTimers.Values)
 			if (!controller.SetCategoryName(timer.Id, timer.Name))
-				throw new Exception($"Failed to save category Id={timer.Id}.");
+				MessageBox.Show($"Failed to save category Id={timer.Id}.");
 
 		foreach (var timer in NoteUpdateTimers.Values)
 			if (!controller.SetNoteText(timer.Id, timer.Text))
-				throw new Exception($"Failed to save note Id={timer.Id}.");
+				MessageBox.Show($"Failed to save note Id={timer.Id}.");
 	}
 
 	private void ListViewLoaded(object sender, RoutedEventArgs e)
@@ -441,8 +436,7 @@ public partial class MainWindow : Window
 
 	private void ChangeNoteStorage(NoteStorage targetStorage)
 	{
-		NoteUpdateTimers.Remove(SelectedNote.Id, out var noteTimer);
-		if (noteTimer != null)
+		if (NoteUpdateTimers.Remove(SelectedNote.Id, out var noteTimer))
 			UpdateNoteCallback(noteTimer);
 
 		if (!controller.ChangeNoteStorage(SelectedNote.Id, targetStorage))
@@ -456,6 +450,11 @@ public partial class MainWindow : Window
 
 	private void ChangeStorage(NoteStorage targetStorage)
 	{
+		foreach (var timer in CategoryUpdateTimers.Values)
+			UpdateCategoryCallback(timer);
+		foreach (var timer in NoteUpdateTimers.Values)
+			UpdateNoteCallback(timer);
+
 		controller.SetStorage(targetStorage);
 
 		Reload();
@@ -582,5 +581,17 @@ public partial class MainWindow : Window
 		if (!controller.SetCategoryName(timer.Id, timer.Name))
 			throw new Exception($"Failed to update category Id={timer.Id}.");
 		timer.Stop();
+	}
+
+	private void RemoveNoteTimer(long noteId)
+	{
+		NoteUpdateTimers.Remove(noteId, out var noteTimer);
+		noteTimer?.Stop();
+	}
+
+	private void RemoveCategoryTimer(long categoryId)
+	{
+		CategoryUpdateTimers.Remove(categoryId, out var categoryTimer);
+		categoryTimer?.Stop();
 	}
 }
