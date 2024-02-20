@@ -54,6 +54,8 @@
 									<Trigger Property="IsSelected" Value="True">
 										<Setter Property="Margin" Value="-2,-2,0,-2"/>
 										<Setter Property="Margin" TargetName="Content" Value="0,0,2,0"/>
+										<Setter Property="Background" TargetName="Border" Value="#1026A0DA"/>
+										<Setter Property="BorderBrush" TargetName="Border" Value="#A826A0DA"/>
 										<Setter Property="Panel.ZIndex" Value="1"/>
 									</Trigger>
 								</ControlTemplate.Triggers>
