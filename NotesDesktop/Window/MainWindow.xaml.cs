@@ -269,6 +269,8 @@ public partial class MainWindow : Window
 		foreach (var timer in NoteUpdateTimers.Values)
 			if (!controller.SetNoteText(timer.Id, timer.Text))
 				MessageBox.Show($"Failed to save note Id={timer.Id}.");
+
+		controller.Save();
 	}
 
 	private void ListViewLoaded(object sender, RoutedEventArgs e)

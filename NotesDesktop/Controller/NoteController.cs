@@ -100,6 +100,11 @@ public class NoteController
 		NoteService.SetCurrentStorage(storage.ToString());
 	}
 
+	public void Save()
+	{
+		NoteService.Save();
+	}
+
 
 	private CategoryModel ToModel(Category category)
 	{

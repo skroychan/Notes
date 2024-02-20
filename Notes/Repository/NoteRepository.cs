@@ -11,13 +11,14 @@ namespace skroy.Notes.Repository;
 internal class NoteRepository
 {
 	private readonly Database database;
+	private readonly string dbPath;
 	private readonly NoteCache cache;
 
 
 	public NoteRepository()
 	{
 		var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-		var dbPath = Path.Combine(appDataPath, "skroy", "Notes", "notes.db");
+		dbPath = Path.Combine(appDataPath, "skroy", "Notes", "notes.db");
 		database = Database.GetSqliteDatabase($"Data Source={dbPath};");
 
 		var categoryMappingBuilder = database.GetMappingBuilder<Category>();
@@ -143,6 +144,9 @@ internal class NoteRepository
 
 		return true;
 	}
+
+	public void Backup()
+		=> File.Copy(dbPath, $"{dbPath}.backup");
 
 
 	private static void ApplyUpdater<T>(T obj, Expression<Action<T>> updater)

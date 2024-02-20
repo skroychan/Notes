@@ -270,6 +270,11 @@ public class NoteService
 	{
 		CurrentStorageId = GetStorageIdByName(storageName);
 	}
+
+	public void Save()
+	{
+		repository.Backup();
+	}
 	
 
 	private long GetStorageIdByName(string storageName)
