@@ -146,7 +146,7 @@ internal class NoteRepository
 	}
 
 	public void Backup()
-		=> File.Copy(dbPath, $"{dbPath}.backup");
+		=> File.Copy(dbPath, $"{dbPath}.backup", true);
 
 
 	private static void ApplyUpdater<T>(T obj, Expression<Action<T>> updater)
