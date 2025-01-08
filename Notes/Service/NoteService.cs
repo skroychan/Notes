@@ -90,7 +90,7 @@ public class NoteService
 
 	public IEnumerable<Category> Search(string query)
 	{
-		return repository.GetAll()
+		return GetAll()
 			.Select(x =>
 			{
 				x.Notes = x.Notes.FindAll(note => note.Text.Contains(query, StringComparison.InvariantCultureIgnoreCase));

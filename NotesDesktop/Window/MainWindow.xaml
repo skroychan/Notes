@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-		Title="Notes" Height="640" Width="960" Closing="WindowClosing" MinWidth="815" MinHeight="320">
+		Title="Notes" Height="800" Width="1280" Closing="WindowClosing" MinWidth="815" MinHeight="320" KeyDown="WindowKeyDown">
 	<Grid>
-        <TabControl x:Name="TabControl" ItemsSource="{Binding Categories}" TabStripPlacement="Left" FontSize="16" Margin="10,40,10,70" SelectionChanged="TabControlSelectionChanged">
-            <TabControl.Template>
+		<TabControl x:Name="TabControl" ItemsSource="{Binding Categories}" TabStripPlacement="Left" FontSize="16" Margin="10,40,10,70" SelectionChanged="TabControlSelectionChanged">
+			<TabControl.Template>
 				<ControlTemplate TargetType="TabControl">
 					<Grid>
 						<Grid.ColumnDefinitions>

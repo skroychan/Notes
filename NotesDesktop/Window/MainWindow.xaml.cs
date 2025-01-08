@@ -273,6 +273,19 @@ public partial class MainWindow : Window
 		controller.Save();
 	}
 
+	private void WindowKeyDown(object sender, KeyEventArgs e)
+	{
+		if (SelectedCategory == null || SelectedNote == null)
+			return;
+
+		if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && Keyboard.IsKeyDown(Key.F))
+		{
+			var selectedText = GetSelectedListViewItem().SelectedText;
+			if (!string.IsNullOrEmpty(selectedText))
+				SearchBox.Text = selectedText;
+		}
+	}
+
 	private void ListViewLoaded(object sender, RoutedEventArgs e)
 	{
 		ListView = (ListView)sender;
@@ -356,8 +369,7 @@ public partial class MainWindow : Window
 		ListView.SelectedItem = note;
 		SelectNote(note);
 		ListView.UpdateLayout();
-		var listViewItem = (ListViewItem)ListView.ItemContainerGenerator.ContainerFromItem(ListView.SelectedItem);
-		listViewItem.FindChild<TextBox>().Focus();
+		GetSelectedListViewItem().Focus();
 	}
 
 	private void FocusOnNoteIfAny(int lastSelectedIndex)
@@ -595,5 +607,11 @@ public partial class MainWindow : Window
 	{
 		CategoryUpdateTimers.Remove(categoryId, out var categoryTimer);
 		categoryTimer?.Stop();
+	}
+
+	private TextBox GetSelectedListViewItem()
+	{
+		var listViewItem = (ListViewItem)ListView.ItemContainerGenerator.ContainerFromItem(ListView.SelectedItem);
+		return listViewItem.FindChild<TextBox>();
 	}
 }
