@@ -1,15 +1,15 @@
-﻿using System.Timers;
+﻿using Avalonia.Threading;
 
 namespace skroy.NotesDesktop.Util;
 
-internal class NoteUpdateTimer : Timer
+internal class NoteUpdateTimer : DispatcherTimer
 {
-	public long Id { get; set; }
-	public string Text { get; set; }
+    public long Id { get; set; }
+    public string Text { get; set; }
 }
 
-internal class CategoryUpdateTimer : Timer
+internal class CategoryUpdateTimer : DispatcherTimer
 {
-	public long Id { get; set; }
-	public string Name { get; set; }
+    public long Id { get; set; }
+    public string Name { get; set; }
 }

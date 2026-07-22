@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NotesDesktop.Properties
+namespace skroy.NotesDesktop.Properties
 {
 
 

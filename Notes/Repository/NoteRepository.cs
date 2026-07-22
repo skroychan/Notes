@@ -19,17 +19,19 @@ internal class NoteRepository
 	{
 		var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 		dbPath = Path.Combine(appDataPath, "skroy", "Notes", "notes.db");
+
+		if (!File.Exists(dbPath))
+		{
+			Directory.CreateDirectory(Path.GetDirectoryName(dbPath));
+			File.Create(dbPath).Dispose();
+		}
+
 		database = Database.GetSqliteDatabase($"Data Source={dbPath};");
-
-		var categoryMappingBuilder = database.GetMappingBuilder<Category>();
-		var storageMappingBuilder = database.GetMappingBuilder<Storage>();
-		var noteMappingBuilder = database.GetMappingBuilder<Note>();
-
-		categoryMappingBuilder.Ignore(x => x.Notes);
-
-		database.AddMapping(categoryMappingBuilder);
-		database.AddMapping(storageMappingBuilder);
-		database.AddMapping(noteMappingBuilder);
+		
+		var categoryBuilder = Database.GetMappingBuilder<Category>().Ignore(x => x.Notes);
+		database.AddMapping(categoryBuilder);
+		database.AddMapping<Note>();
+		database.AddMapping<Storage>();
 
 		database.Initialize();
 
@@ -131,12 +133,7 @@ internal class NoteRepository
 
 	public bool DeleteCategory(long categoryId)
 	{
-		var notesCount = cache.GetCategory(categoryId).Notes.Count;
-		var affectedRows = database.Delete<Note>(x => x.CategoryId == categoryId);
-		if (affectedRows != notesCount)
-			return false;
-
-		affectedRows = database.Delete<Category>(x => x.Id == categoryId);
+		var affectedRows = database.Delete<Category>(x => x.Id == categoryId);
 		if (affectedRows != 1)
 			return false;
 

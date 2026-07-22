@@ -85,7 +85,7 @@ internal class NoteCache
 			if (!CategoriesCache.TryGetValue(note.CategoryId, out Category newCategory))
 				throw new ArgumentException($"Note with Id={note.Id} references category with Id={note.CategoryId} which does not exist.");
 
-			oldCategory.Notes.Remove(oldNote);
+			oldCategory.Notes.RemoveAt(oldNoteIndex);
 			newCategory.Notes.Add(newNote);
 		}
 
@@ -104,22 +104,26 @@ internal class NoteCache
 	{
 		if (!NotesCache.TryGetValue(noteId, out var note))
 			throw new ArgumentException($"Cannot find note with Id={noteId}.");
-
-		CategoriesCache[note.CategoryId].Notes.Remove(note);
-
-		NotesCache.Remove(noteId);
+		
+		var noteIndex = CategoriesCache[note.CategoryId].Notes.FindIndex(x => x.Id == note.Id);
+		if (noteIndex == -1)
+			throw new Exception($"Failed to remove note with Id={note.Id} from category with Id={note.CategoryId}.");
+		CategoriesCache[note.CategoryId].Notes.RemoveAt(noteIndex);
+		
+		if (!NotesCache.Remove(noteId))
+			throw new Exception($"Failed to remove note with Id={noteId}.");
 	}
 
 	public void DeleteCategory(long categoryId)
 	{
 		if (!CategoriesCache.TryGetValue(categoryId, out var category))
 			throw new ArgumentException($"Cannot find category with Id={categoryId}.");
+		
+		if (category.Notes.Count != 0)
+			throw new ArgumentException($"Category with Id={categoryId} has notes.");
 
-		var notesToDelete = NotesCache.Where(x => x.Value.CategoryId == category.Id);
-		foreach (var note in notesToDelete)
-			NotesCache.Remove(note.Key);
-
-		CategoriesCache.Remove(categoryId);
+		if (!CategoriesCache.Remove(categoryId))
+			throw new Exception($"Failed to remove category with Id={categoryId}.");
 	}
 
 

@@ -1,0 +1,164 @@
+﻿<Window x:Class="skroy.NotesDesktop.Window.MainWindow" x:Name="Main"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:model="using:skroy.NotesDesktop.Model"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        xmlns:controls="using:Avalonia.Controls"
+        xmlns:local="clr-namespace:skroy.NotesDesktop.Util"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+        Title="Notes" Height="800" Width="1280" Closing="WindowClosing" MinWidth="815" MinHeight="320">
+	<Window.KeyBindings>
+		<KeyBinding Gesture="Ctrl+F" Command="{Binding SearchSelectedCommand}"/>
+	</Window.KeyBindings>
+	<Grid>
+		<TabControl x:Name="TabControl" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" TabStripPlacement="Left" FontSize="16" Margin="10,40,10,70">
+			<TabControl.Template>
+				<ControlTemplate TargetType="TabControl">
+					<Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" Background="{TemplateBinding Background}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}" VerticalAlignment="{TemplateBinding VerticalAlignment}">
+						<DockPanel>
+							<ScrollViewer DockPanel.Dock="{TemplateBinding TabStripPlacement}" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Hidden">
+								<ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}"/>
+							</ScrollViewer>
+							<Panel ClipToBounds="True">
+								<!-- <ContentPresenter Name="PART_SelectedContentHost2" Margin="{TemplateBinding Padding}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" IsVisible="False" /> -->
+								<ContentPresenter Name="PART_SelectedContentHost" Margin="0" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+							</Panel>
+						</DockPanel>
+					</Border>
+				</ControlTemplate>
+			</TabControl.Template>
+			<TabControl.ItemTemplate>
+				<DataTemplate x:DataType="model:CategoryModel">
+					<TextBlock Text="{Binding Name}"/>
+				</DataTemplate>
+			</TabControl.ItemTemplate>
+			<TabControl.ItemContainerTheme>
+				<ControlTheme TargetType="TabItem" x:DataType="model:CategoryModel">
+					<Setter Property="Padding" Value="5"/>
+					<Setter Property="Margin" Value="5,0,0,0"/>
+					<Setter Property="HorizontalContentAlignment" Value="Center"/>
+					<Setter Property="VerticalContentAlignment" Value="Center"/>
+					<Style Selector="^:pointerover /template/ Border#PART_LayoutRoot">
+						<Setter Property="Opacity" Value="0.7"/>
+					</Style>
+					<Style Selector="^:selected /template/ Border#PART_LayoutRoot">
+						<Setter Property="Margin" Value="0,0,0,0" />
+					</Style>
+					<Style Selector="^:selected /template/ Border#PART_Border">
+						<Setter Property="BorderBrush" Value="{StaticResource ThemeBorderMidColor}" />
+					</Style>
+					<Setter Property="Template">
+						<ControlTemplate TargetType="TabItem" x:DataType="model:CategoryModel">
+							<Border x:Name="PART_LayoutRoot" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}">
+								<Border.Background>
+									<SolidColorBrush Color="{Binding Color}"/>
+								</Border.Background>
+								<Panel>
+									<ContentPresenter x:Name="PART_ContentPresenter" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" CornerRadius="{TemplateBinding CornerRadius}"/>
+									<Border x:Name="PART_Border" Margin="-5" BorderThickness="1,1,0,1"/>
+								</Panel>
+							</Border>
+						</ControlTemplate>
+					</Setter>
+				</ControlTheme>
+			</TabControl.ItemContainerTheme>
+			<TabControl.ContentTemplate>
+				<DataTemplate DataType="model:CategoryModel">
+					<ListBox ItemsSource="{Binding Notes}" SelectedItem="{Binding #Main.SelectedNote}" Loaded="ListViewLoaded" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="False" SelectionMode="Single">
+						<ListBox.ItemTemplate>
+							<DataTemplate DataType="model:NoteModel">
+								<TextBox Text="{Binding Text}" GotFocus="NoteTextBoxSelected" TextChanged="NoteTextChanged" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" BorderThickness="0" Padding="4,2">
+									<TextBox.Background>
+										<SolidColorBrush Color="{Binding Color}"/>
+									</TextBox.Background>
+								</TextBox>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+						<ListBox.ItemContainerTheme>
+							<ControlTheme TargetType="ListBoxItem">
+								<Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+								<Setter Property="Margin" Value="0"/>
+								<Setter Property="Padding" Value="0"/>
+								<Setter Property="BorderBrush" Value="LightGray"/>
+								<Setter Property="BorderThickness" Value="0,0,0,1"/>
+								<Style Selector="^:pointerover /template/ Border#PART_Border, ^:selected /template/ Border#PART_Border">
+									<Setter Property="Background" Value="#eee"/>
+									<Setter Property="BorderBrush" Value="Gray"/>
+								</Style>
+								<Setter Property="Template">
+									<Setter.Value>
+										<ControlTemplate TargetType="ListBoxItem">
+											<Border x:Name="PART_Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+												<ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+											</Border>
+										</ControlTemplate>
+									</Setter.Value>
+								</Setter>
+							</ControlTheme>
+						</ListBox.ItemContainerTheme>
+					</ListBox>
+				</DataTemplate>
+			</TabControl.ContentTemplate>
+		</TabControl>
+		<TextBox x:Name="SearchBox" HorizontalAlignment="Stretch" Margin="10,10,40,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="NaN" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" TextChanged="SearchTextChanged"/>
+		<Button x:Name="ArchiveMode" Content="📁" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="25" Height="25" Click="ArchiveModeClick" ToolTip.Tip="Switch to archive"/>
+		<Button x:Name="MainMode" Content="↺" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="25" Height="25" Click="MainModeClick" ToolTip.Tip="Switch to notes" IsVisible="False"/>
+		<Button x:Name="AddCategory" Content="+" HorizontalAlignment="Left" Margin="10,0,0,40" VerticalAlignment="Bottom" Height="25" Click="AddCategoryClick" Width="25" ToolTip.Tip="New category"/>
+		<Button x:Name="RemoveCategory" Content="🗑" HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedCategory}" Click="RemoveCategoryClick" Width="25" ToolTip.Tip="Remove category"/>
+		<RepeatButton x:Name="MoveCategoryUp" Content="🡑" HorizontalAlignment="Left" Margin="40,0,0,40" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedCategory}" Click="MoveCategoryUpClick" Width="25" VerticalContentAlignment="Center" ToolTip.Tip="Move up"/>
+		<RepeatButton x:Name="MoveCategoryDown" Content="🡓" HorizontalAlignment="Left" Margin="40,0,0,10" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedCategory}" Click="MoveCategoryDownClick" Width="25" VerticalContentAlignment="Center" ToolTip.Tip="Move down"/>
+		<Button x:Name="MoveCategoryTop" Content="⮅" HorizontalAlignment="Left" Margin="70,0,0,40" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedCategory}" Click="MoveCategoryTopClick" Width="25" VerticalContentAlignment="Center" ToolTip.Tip="Move to the top"/>
+		<Button x:Name="MoveCategoryBottom" Content="⮇" HorizontalAlignment="Left" Margin="70,0,0,10" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedCategory}" Click="MoveCategoryBottomClick" Width="25" VerticalContentAlignment="Center" ToolTip.Tip="Move to the bottom"/>
+		<Label x:Name="NotesInCategory" Content="{Binding SelectedCategory.Notes.Count, StringFormat='{}{0} notes'}" HorizontalAlignment="Left" Margin="100,0,0,40" VerticalAlignment="Bottom" Height="25" Width="120"/>
+		<TextBox x:Name="SelectedCategoryName" Text="{Binding SelectedCategory.Name}" IsEnabled="{Binding !!SelectedCategory}" TextChanged="SelectedCategoryNameChanged" HorizontalAlignment="Left" Margin="100,0,0,10" TextWrapping="NoWrap" VerticalAlignment="Bottom" Width="120" Height="25" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" MaxLines="1" MaxLength="18"/>
+		<Button x:Name="CategoryColor" IsEnabled="{Binding !!SelectedCategory}" HorizontalAlignment="Left" Margin="225,0,0,10" VerticalAlignment="Bottom" Height="25" Width="25" ToolTip.Tip="Category color">
+			<Button.Flyout>
+				<Flyout>
+					<ColorView Color="{Binding SelectedCategory.Color}" IsAlphaEnabled="False" IsAlphaVisible="False" Unloaded="CategoryColorChanged">
+						<ColorView.Palette>
+							<controls:MaterialHalfColorPalette/>
+						</ColorView.Palette>
+					</ColorView>
+				</Flyout>
+			</Button.Flyout>
+			<Button.Background>
+				<SolidColorBrush Color="{Binding SelectedCategory.Color}"/>
+			</Button.Background>
+		</Button>
+		<Button x:Name="MoveNoteTop" Content="⮅" HorizontalAlignment="Right" Margin="0,0,10,40" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedNote}" Click="MoveNoteTopClick" Width="25" VerticalContentAlignment="Center" ToolTip.Tip="Move to the top"/>
+		<Button x:Name="MoveNoteBottom" Content="⮇" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedNote}" Click="MoveNoteBottomClick" Width="25" VerticalContentAlignment="Center" ToolTip.Tip="Move to the bottom"/>
+		<RepeatButton x:Name="MoveNoteUp" Content="🡑" HorizontalAlignment="Right" Margin="0,0,40,40" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedNote}" Click="MoveNoteUpClick" Width="25" VerticalContentAlignment="Center" ToolTip.Tip="Move up"/>
+		<RepeatButton x:Name="MoveNoteDown" Content="🡓" HorizontalAlignment="Right" Margin="0,0,40,10" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedNote}" Click="MoveNoteDownClick" Width="25" VerticalContentAlignment="Center" ToolTip.Tip="Move down"/>
+		<Button x:Name="AddNote" Content="+" HorizontalAlignment="Right" Margin="0,0,70,40" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedCategory}" Click="AddNoteClick" Width="25" ToolTip.Tip="New note"/>
+		<Button x:Name="ArchiveNote" Content="📁" HorizontalAlignment="Right" Margin="0,0,70,10" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedNote}" Click="ArchiveNoteClick" Width="25" ToolTip.Tip="Archive note"/>
+		<Button x:Name="UnarchiveNote" Content="↺" HorizontalAlignment="Right" Margin="0,0,70,10" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedNote}" Click="UnarchiveNoteClick" Width="25" ToolTip.Tip="Unarchive note" IsVisible="False" />
+		<Button x:Name="RemoveNote" Content="🗑" HorizontalAlignment="Right" Margin="0,0,100,10" VerticalAlignment="Bottom" Height="25" IsEnabled="{Binding !!SelectedNote}" Click="RemoveNoteClick" Width="25" ToolTip.Tip="Remove note"/>
+		<ComboBox x:Name="MoveDestination" ItemsSource="{Binding Categories}" DisplayMemberBinding="{Binding Name}" IsEnabled="{Binding !!SelectedNote}" HorizontalAlignment="Right" Margin="0,0,100,40" VerticalAlignment="Bottom" Width="125" Height="25"/>
+		<Button x:Name="ChangeNoteCategory" Content="→" HorizontalAlignment="Right" Margin="0,0,230,40" VerticalAlignment="Bottom" Height="25" Width="25" IsEnabled="{Binding !!SelectedNote}" Click="ChangeNoteCategoryClick" ToolTip.Tip="Move to another category"/>
+		<Button x:Name="NoteColor" IsEnabled="{Binding !!SelectedNote}" HorizontalAlignment="Right" Margin="0,0,130,10" VerticalAlignment="Bottom" Height="25" Width="25" ToolTip.Tip="Note color">
+			<Button.Flyout>
+				<Flyout>
+					<ColorView Color="{Binding SelectedNote.Color}" IsAlphaEnabled="False" IsAlphaVisible="False" Unloaded="NoteColorChanged">
+						<ColorView.Palette>
+							<controls:MaterialHalfColorPalette/>
+						</ColorView.Palette>
+					</ColorView>
+				</Flyout>
+			</Button.Flyout>
+			<Button.Background>
+				<SolidColorBrush Color="{Binding SelectedNote.Color}"/>
+			</Button.Background>
+		</Button>
+		<Label x:Name="SelectedId" Content="{Binding SelectedNote.Id, StringFormat='#{0}'}" HorizontalAlignment="Right" Margin="0,0,260,40" VerticalAlignment="Bottom" Height="25" Width="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+		<Label x:Name="LastModified" Content="{Binding SelectedNote.CreationDate, TargetNullValue=SelectedNote.ModificationDate, FallbackValue=''}" HorizontalAlignment="Right" Margin="0,0,160,10" VerticalAlignment="Bottom" Height="25" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+			<ToolTip.Tip>
+				<MultiBinding Converter="{x:Static local:Converters.JoinLines}">
+					<Binding Path="SelectedNote.CreationDate" StringFormat="Created: {0}" TargetNullValue=""/>
+					<Binding Path="SelectedNote.ModificationDate" StringFormat="Edited: {0}" TargetNullValue=""/>
+				</MultiBinding>
+			</ToolTip.Tip>
+		</Label>
+	</Grid>
+</Window>

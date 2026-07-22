@@ -1,16 +1,35 @@
 ﻿using System;
+using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace skroy.NotesDesktop.Model;
 
-public class NoteModel
+public partial class NoteModel : ObservableObject
 {
-    public long Id { get; set; }
-    public string Text { get; set; }
-    public string Color { get; set; }
-	public long CategoryId { get; set; }
-	public NoteStorage Storage { get; set; }
-	public long Order { get; set; }
-	public DateTime? CreationDate { get; set; }
-    public DateTime? ModificationDate { get; set; }
-    public DateTime? ArchiveDate { get; set; }
+    [ObservableProperty]
+    public partial long Id { get; set; }
+
+    [ObservableProperty]
+    public partial string Text { get; set; }
+
+    [ObservableProperty]
+    public partial Color Color { get; set; }
+
+    [ObservableProperty]
+    public partial long CategoryId { get; set; }
+
+    [ObservableProperty]
+    public partial NoteStorage Storage { get; set; }
+
+    [ObservableProperty]
+    public partial long Order { get; set; }
+
+    [ObservableProperty]
+    public partial DateTime? CreationDate { get; set; }
+
+    [ObservableProperty]
+    public partial DateTime? ModificationDate { get; set; }
+
+    [ObservableProperty]
+    public partial DateTime? ArchiveDate { get; set; }
 }
