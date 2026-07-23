@@ -122,6 +122,7 @@ public partial class MainWindow : Avalonia.Controls.Window
         SelectedCategory.Notes.Insert(selectedIndex + 1, newNote);
 
         UpdateWindowTitle();
+        ListBox.UpdateLayout();
         FocusOnNote(newNote);
     }
 
@@ -301,8 +302,6 @@ public partial class MainWindow : Avalonia.Controls.Window
 
     private void FocusOnNote(NoteModel note)
     {
-        ListBox.SelectedItem = note;
-        ListBox.UpdateLayout();
         var container = ListBox.ContainerFromItem(note) as ListBoxItem;
         var textBox = container?.GetVisualDescendants().OfType<TextBox>().FirstOrDefault();
         textBox?.Focus();
@@ -311,11 +310,11 @@ public partial class MainWindow : Avalonia.Controls.Window
 
     private void FocusOnNoteIfAny(int selectedIndex)
     {
-        if (SelectedCategory.Notes.Count != 0)
-        {
-            var newIndex = Math.Clamp(selectedIndex, 0, ListBox.Items.Count - 1);
-            FocusOnNote((NoteModel)ListBox.Items[newIndex]);
-        }
+        if (SelectedCategory.Notes.Count == 0)
+            return;
+
+        var newIndex = Math.Clamp(selectedIndex, 0, ListBox.Items.Count - 1);
+        FocusOnNote((NoteModel)ListBox.Items[newIndex]);
     }
 
     private void UpdateWindowTitle()
@@ -370,6 +369,8 @@ public partial class MainWindow : Avalonia.Controls.Window
             throw new Exception($"Failed to reorder note to position={newPosition}.");
 
         SelectedCategory.Notes.Move(SelectedCategory.Notes.IndexOf(SelectedNote), newPosition);
+
+        ListBox.SelectedIndex = newPosition;
         FocusOnNote(SelectedNote);
     }
 
