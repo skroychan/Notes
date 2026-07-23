@@ -73,6 +73,9 @@
 									<TextBox.Background>
 										<SolidColorBrush Color="{Binding Color}"/>
 									</TextBox.Background>
+									<TextBox.InnerRightContent>
+										<Button Content="✕" Background="Transparent" BorderThickness="0" Margin="-30,0,0,0" Width="25" Height="20" Padding="0,0,0,0" IsVisible="{Binding $parent.IsPointerOver}" Command="{Binding #Main.RemoveNoteInlineCommand}" CommandParameter="{Binding Id}"/>
+									</TextBox.InnerRightContent>
 								</TextBox>
 							</DataTemplate>
 						</ListBox.ItemTemplate>

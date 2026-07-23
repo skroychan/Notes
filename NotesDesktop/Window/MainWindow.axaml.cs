@@ -127,24 +127,16 @@ public partial class MainWindow : Avalonia.Controls.Window
 
     private async void RemoveNoteClick(object sender, RoutedEventArgs e)
     {
-        var noteText = SelectedNote.Text.Truncate(60);
-        if (!string.IsNullOrEmpty(noteText))
-        {
-            var msgBoxText = $"Are you sure you want to permanently delete '{noteText}'?";
-            if (!await ShowMessageBoxConfirm("Confirm deletion", msgBoxText))
-                return;
-        }
-
-        RemoveNoteTimer(SelectedNote.Id);
-
-        if (!controller.DeleteNote(SelectedNote.Id))
-            throw new Exception("Failed to delete note.");
-
         var lastSelectedIndex = ListBox.SelectedIndex;
-        SelectedCategory.Notes.Remove(SelectedNote);
-
-        UpdateWindowTitle();
+        await RemoveNoteWithConfirmation(SelectedNote);
         FocusOnNoteIfAny(lastSelectedIndex - 1);
+    }
+
+    [RelayCommand]
+    private async Task RemoveNoteInline(long noteId)
+    {
+        var note = SelectedCategory.Notes.First(x => x.Id == noteId);
+        await RemoveNoteWithConfirmation(note);
     }
 
     private async void ArchiveNoteClick(object sender, RoutedEventArgs e)
@@ -285,21 +277,24 @@ public partial class MainWindow : Avalonia.Controls.Window
 
     private void NoteTextChanged(object sender, TextChangedEventArgs e)
     {
-        UpdateNoteTextTimer();
-        SelectedNote.ModificationDate = DateTime.Now;
-    }
+        if (SelectedNote == null)
+            return;
 
-    private void SelectedCategoryNameChanged(object sender, TextChangedEventArgs e)
-    {
-        UpdateCategoryNameTimer();
+        UpdateNoteTextTimer(SelectedNote);
+        SelectedNote.ModificationDate = DateTime.Now;
     }
 
     private void NoteTextBoxSelected(object sender, FocusChangedEventArgs e)
     {
-        var textBox = e.NewFocusedElement as TextBox;
+        var textBox = sender as TextBox;
         var listBoxItem = textBox?.Parent as ContentPresenter;
         var note = listBoxItem?.Content as NoteModel;
         SelectedNote = note ?? throw new Exception("No note was selected.");
+    }
+
+    private void SelectedCategoryNameChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdateCategoryNameTimer(SelectedCategory);
     }
 
     #endregion
@@ -326,6 +321,26 @@ public partial class MainWindow : Avalonia.Controls.Window
     private void UpdateWindowTitle()
     {
         Title = $"{Categories.SelectMany(c => c.Notes).Count()} notes in {Categories.Count} categories";
+    }
+
+    private async Task RemoveNoteWithConfirmation(NoteModel note)
+    {
+        var noteText = note.Text.Truncate(60);
+        if (!string.IsNullOrEmpty(noteText))
+        {
+            if (!await ShowMessageBoxConfirm("Confirm deletion",
+                    $"Are you sure you want to permanently delete '{noteText}'?"))
+                return;
+        }
+
+        RemoveNoteTimer(note.Id);
+
+        if (!controller.DeleteNote(note.Id))
+            throw new Exception("Failed to delete note.");
+
+        SelectedCategory.Notes.Remove(note);
+
+        UpdateWindowTitle();
     }
 
     private void ReorderCategory(int newPosition)
@@ -411,10 +426,13 @@ public partial class MainWindow : Avalonia.Controls.Window
         Categories = new ObservableCollection<CategoryModel>(controller.GetAll());
     }
 
-    private void UpdateNoteTextTimer()
+    private void UpdateNoteTextTimer(NoteModel note)
     {
-        var timer = GetOrCreateNoteTimer(SelectedNote.Id);
-        timer.Text = SelectedNote.Text;
+        if (note == null)
+            return;
+
+        var timer = GetOrCreateNoteTimer(note.Id);
+        timer.Text = note.Text;
 
         if (timer.IsEnabled)
             timer.Stop();
@@ -423,13 +441,16 @@ public partial class MainWindow : Avalonia.Controls.Window
 
         timer.Start();
 
-        NoteUpdateTimers[SelectedNote.Id] = timer;
+        NoteUpdateTimers[note.Id] = timer;
     }
 
-    private void UpdateCategoryNameTimer()
+    private void UpdateCategoryNameTimer(CategoryModel category)
     {
-        var timer = GetOrCreateCategoryTimer(SelectedCategory.Id);
-        timer.Name = SelectedCategory.Name;
+        if (category == null)
+            return;
+
+        var timer = GetOrCreateCategoryTimer(category.Id);
+        timer.Name = category.Name;
 
         if (timer.IsEnabled)
             timer.Stop();
@@ -438,7 +459,7 @@ public partial class MainWindow : Avalonia.Controls.Window
 
         timer.Start();
 
-        CategoryUpdateTimers[SelectedCategory.Id] = timer;
+        CategoryUpdateTimers[category.Id] = timer;
     }
 
     private NoteUpdateTimer GetOrCreateNoteTimer(long noteId)
@@ -469,14 +490,14 @@ public partial class MainWindow : Avalonia.Controls.Window
         return timer;
     }
 
-    private async void UpdateNoteTextCallback(NoteUpdateTimer timer)
+    private void UpdateNoteTextCallback(NoteUpdateTimer timer)
     {
         if (!controller.SetNoteText(timer.Id, timer.Text))
             throw new Exception($"Failed to update note Id={timer.Id}.");
         timer.Stop();
     }
 
-    private async void UpdateCategoryNameCallback(CategoryUpdateTimer timer)
+    private void UpdateCategoryNameCallback(CategoryUpdateTimer timer)
     {
         if (!controller.SetCategoryName(timer.Id, timer.Name))
             throw new Exception($"Failed to update category Id={timer.Id}.");
