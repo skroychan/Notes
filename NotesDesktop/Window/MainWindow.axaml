@@ -79,6 +79,12 @@
 								</TextBox>
 							</DataTemplate>
 						</ListBox.ItemTemplate>
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<!-- disabling virtualization due to framework bugs that cause crashes -->
+								<StackPanel />
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
 						<ListBox.ItemContainerTheme>
 							<ControlTheme TargetType="ListBoxItem">
 								<Setter Property="HorizontalContentAlignment" Value="Stretch"/>

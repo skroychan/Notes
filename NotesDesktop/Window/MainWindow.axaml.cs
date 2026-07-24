@@ -116,14 +116,14 @@ public partial class MainWindow : Avalonia.Controls.Window
         if (newNote == null)
             throw new Exception("Failed to create note.");
 
-        var selectedIndex = SelectedCategory.Notes.IndexOf(SelectedNote);
-        if (!controller.ReorderNote(newNote.Id, selectedIndex + 1))
-            throw new Exception($"Failed to reorder note to position={selectedIndex + 1}.");
-        SelectedCategory.Notes.Insert(selectedIndex + 1, newNote);
+        var newIndex = SelectedCategory.Notes.IndexOf(SelectedNote) + 1;
+        if (!controller.ReorderNote(newNote.Id, newIndex))
+            throw new Exception($"Failed to reorder note to position={newIndex}.");
+        SelectedCategory.Notes.Insert(newIndex, newNote);
 
         UpdateWindowTitle();
         ListBox.UpdateLayout();
-        FocusOnNote(newNote);
+        FocusOnNote(newIndex);
     }
 
     private async void RemoveNoteClick(object sender, RoutedEventArgs e)
@@ -300,21 +300,22 @@ public partial class MainWindow : Avalonia.Controls.Window
 
     #endregion
 
-    private void FocusOnNote(NoteModel note)
+    private void FocusOnNote(int noteIndex)
     {
-        var container = ListBox.ContainerFromItem(note) as ListBoxItem;
+        ListBox.ScrollIntoView(noteIndex);
+        var container = ListBox.ContainerFromIndex(noteIndex) as ListBoxItem;
         var textBox = container?.GetVisualDescendants().OfType<TextBox>().FirstOrDefault();
         textBox?.Focus();
-        textBox?.CaretIndex = note.Text.Length;
+        textBox?.CaretIndex = SelectedNote.Text.Length;
     }
 
-    private void FocusOnNoteIfAny(int selectedIndex)
+    private void FocusOnNoteIfAny(int noteIndex)
     {
         if (SelectedCategory.Notes.Count == 0)
             return;
 
-        var newIndex = Math.Clamp(selectedIndex, 0, ListBox.Items.Count - 1);
-        FocusOnNote((NoteModel)ListBox.Items[newIndex]);
+        var newIndex = Math.Clamp(noteIndex, 0, ListBox.Items.Count - 1);
+        FocusOnNote(newIndex);
     }
 
     private void UpdateWindowTitle()
@@ -371,7 +372,7 @@ public partial class MainWindow : Avalonia.Controls.Window
         SelectedCategory.Notes.Move(SelectedCategory.Notes.IndexOf(SelectedNote), newPosition);
 
         ListBox.SelectedIndex = newPosition;
-        FocusOnNote(SelectedNote);
+        FocusOnNote(newPosition);
     }
 
     private void ChangeNoteStorage(NoteStorage targetStorage)
