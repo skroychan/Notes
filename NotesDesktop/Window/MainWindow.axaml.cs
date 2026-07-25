@@ -278,7 +278,7 @@ public partial class MainWindow : Avalonia.Controls.Window
 
     private void NoteTextChanged(object sender, TextChangedEventArgs e)
     {
-        if (SelectedNote == null)
+        if (SelectedNote == null || sender as TextBox != SelectedTextBox || SelectedTextBox?.IsLoaded != true)
             return;
 
         UpdateNoteTextTimer(SelectedNote);
@@ -296,6 +296,9 @@ public partial class MainWindow : Avalonia.Controls.Window
 
     private void SelectedCategoryNameChanged(object sender, TextChangedEventArgs e)
     {
+        if (SelectedCategory == null || (sender as TextBox)?.IsLoaded != true)
+            return;
+        
         UpdateCategoryNameTimer(SelectedCategory);
     }
 
