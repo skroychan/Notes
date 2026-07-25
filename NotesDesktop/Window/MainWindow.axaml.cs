@@ -288,6 +288,7 @@ public partial class MainWindow : Avalonia.Controls.Window
     private void NoteTextBoxSelected(object sender, FocusChangedEventArgs e)
     {
         var textBox = sender as TextBox;
+        SelectedTextBox = textBox;
         var listBoxItem = textBox?.Parent as ContentPresenter;
         var note = listBoxItem?.Content as NoteModel;
         SelectedNote = note ?? throw new Exception("No note was selected.");
