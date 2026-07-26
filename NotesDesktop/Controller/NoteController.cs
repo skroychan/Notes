@@ -102,9 +102,9 @@ public class NoteController
         NoteService.SetCurrentStorage(storage.ToString());
     }
 
-    public void Save()
+    public void Backup()
     {
-        NoteService.Save();
+        NoteService.Backup();
     }
 
 

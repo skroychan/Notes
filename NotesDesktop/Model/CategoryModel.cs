@@ -20,7 +20,7 @@ public partial class CategoryModel : ObservableObject
     public partial Color Color { get; set; }
 
     [ObservableProperty]
-    public partial long Order { get; set; }
+    public partial int Order { get; set; }
 
     [ObservableProperty]
     public partial DateTime? CreationDate { get; set; }

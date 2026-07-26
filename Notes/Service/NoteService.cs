@@ -137,6 +137,9 @@ public class NoteService
 
 	public bool ReorderCategory(long categoryId, int newPosition)
 	{
+		if (newPosition < 0)
+			return false;
+
 		var result = true;
 		var category = repository.GetCategory(categoryId);
 		var categories = repository.GetAll().ToList();
@@ -168,6 +171,9 @@ public class NoteService
 
 	public bool ReorderNote(long noteId, int newPosition)
 	{
+		if (newPosition < 0)
+			return false;
+
 		var result = true;
 		var note = repository.GetNote(noteId);
 		if (note.Order == newPosition)
@@ -271,7 +277,7 @@ public class NoteService
 		CurrentStorageId = GetStorageIdByName(storageName);
 	}
 
-	public void Save()
+	public void Backup()
 	{
 		repository.Backup();
 	}

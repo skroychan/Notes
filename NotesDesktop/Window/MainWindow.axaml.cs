@@ -21,7 +21,7 @@ namespace skroy.NotesDesktop.Window;
 
 public partial class MainWindow : Avalonia.Controls.Window
 {
-    private readonly TimeSpan defaultTimerInterval = TimeSpan.FromSeconds(3);
+    private readonly TimeSpan defaultTimerInterval = TimeSpan.FromSeconds(5);
     private readonly NoteController controller;
 
     private ListBox ListBox { get; set; }
@@ -233,14 +233,12 @@ public partial class MainWindow : Avalonia.Controls.Window
     protected async void WindowClosing(object sender, WindowClosingEventArgs e)
     {
         foreach (var timer in CategoryUpdateTimers.Values)
-            if (!controller.SetCategoryName(timer.Id, timer.Name))
-                await ShowMessageBox("Error", $"Failed to save category Id={timer.Id}.");
+            ForceFinishTimer(timer);
 
         foreach (var timer in NoteUpdateTimers.Values)
-            if (!controller.SetNoteText(timer.Id, timer.Text))
-                await ShowMessageBox("Error", $"Failed to save note Id={timer.Id}.");
+            ForceFinishTimer(timer);
 
-        controller.Save();
+        controller.Backup();
     }
 
     [RelayCommand]
@@ -281,7 +279,7 @@ public partial class MainWindow : Avalonia.Controls.Window
         if (SelectedNote == null || sender as TextBox != SelectedTextBox || SelectedTextBox?.IsLoaded != true)
             return;
 
-        UpdateNoteTextTimer(SelectedNote);
+        StartNoteUpdateTimer(SelectedNote.Id, SelectedNote.Text);
         SelectedNote.ModificationDate = DateTime.Now;
     }
 
@@ -298,8 +296,8 @@ public partial class MainWindow : Avalonia.Controls.Window
     {
         if (SelectedCategory == null || (sender as TextBox)?.IsLoaded != true)
             return;
-        
-        UpdateCategoryNameTimer(SelectedCategory);
+
+        StartCategoryUpdateTimer(SelectedCategory.Id, SelectedCategory.Name);
     }
 
     #endregion
@@ -355,6 +353,8 @@ public partial class MainWindow : Avalonia.Controls.Window
         if (newPosition < 0 || newPosition >= TabControl.Items.Count)
             return;
 
+        StartCategoryUpdateTimer(SelectedCategory.Id, newOrder: newPosition);
+
         if (!controller.ReorderCategory(SelectedCategory.Id, newPosition))
             throw new Exception($"Failed to reorder category to position={newPosition}.");
 
@@ -370,6 +370,8 @@ public partial class MainWindow : Avalonia.Controls.Window
         if (newPosition < 0 || newPosition >= SelectedCategory.Notes.Count)
             return;
 
+        StartNoteUpdateTimer(SelectedNote.Id, newOrder: newPosition);
+
         if (!controller.ReorderNote(SelectedNote.Id, newPosition))
             throw new Exception($"Failed to reorder note to position={newPosition}.");
 
@@ -382,13 +384,14 @@ public partial class MainWindow : Avalonia.Controls.Window
     private void ChangeNoteStorage(NoteStorage targetStorage)
     {
         if (NoteUpdateTimers.Remove(SelectedNote.Id, out var noteTimer))
-            UpdateNoteTextCallback(noteTimer);
+            ForceFinishTimer(noteTimer);
 
         if (!controller.ChangeNoteStorage(SelectedNote.Id, targetStorage))
             throw new Exception($"Failed to move note to storage={targetStorage}.");
 
         var lastSelectedIndex = SelectedCategory.Notes.IndexOf(SelectedNote);
         SelectedCategory.Notes.Remove(SelectedNote);
+
         UpdateWindowTitle();
         FocusOnNoteIfAny(lastSelectedIndex);
     }
@@ -396,9 +399,9 @@ public partial class MainWindow : Avalonia.Controls.Window
     private void ChangeStorage(NoteStorage targetStorage)
     {
         foreach (var timer in CategoryUpdateTimers.Values)
-            UpdateCategoryNameCallback(timer);
+            ForceFinishTimer(timer);
         foreach (var timer in NoteUpdateTimers.Values)
-            UpdateNoteTextCallback(timer);
+            ForceFinishTimer(timer);
 
         controller.SetStorage(targetStorage);
 
@@ -432,40 +435,69 @@ public partial class MainWindow : Avalonia.Controls.Window
         Categories = new ObservableCollection<CategoryModel>(controller.GetAll());
     }
 
-    private void UpdateNoteTextTimer(NoteModel note)
+    private void StartNoteUpdateTimer(long noteId, string newText = null, int newOrder = -1)
     {
-        if (note == null)
+        if (newText == null && newOrder == -1)
             return;
 
-        var timer = GetOrCreateNoteTimer(note.Id);
-        timer.Text = note.Text;
-
+        var timer = GetOrCreateNoteTimer(noteId);
         if (timer.IsEnabled)
             timer.Stop();
         else
-            timer.Tick += (sender, _) => UpdateNoteTextCallback((NoteUpdateTimer)sender);
+            NoteUpdateTimers[noteId] = timer;
+
+        if (newText != null)
+        {
+            if (timer.Text == null)
+                timer.Tick += (sender, _) => UpdateNoteTextCallback((NoteUpdateTimer)sender);
+            timer.Text = newText;
+        }
+
+        if (newOrder != -1)
+        {
+            foreach (var existingOrderUpdateTimer in NoteUpdateTimers.Values)
+                if (existingOrderUpdateTimer != timer && existingOrderUpdateTimer.Order != -1)
+                    ForceFinishTimer(existingOrderUpdateTimer);
+
+            if (timer.Order == -1)
+                timer.Tick += (sender, _) => UpdateNoteOrderCallback((NoteUpdateTimer)sender);
+            timer.Order = newOrder;
+        }
 
         timer.Start();
-
-        NoteUpdateTimers[note.Id] = timer;
     }
 
-    private void UpdateCategoryNameTimer(CategoryModel category)
+    private void StartCategoryUpdateTimer(long categoryId, string newName = null, int newOrder = -1)
     {
-        if (category == null)
+        if (newName == null && newOrder == -1)
             return;
 
-        var timer = GetOrCreateCategoryTimer(category.Id);
-        timer.Name = category.Name;
-
+        var timer = GetOrCreateCategoryTimer(categoryId);
         if (timer.IsEnabled)
             timer.Stop();
         else
-            timer.Tick += (sender, _) => UpdateCategoryNameCallback((CategoryUpdateTimer)sender);
+            CategoryUpdateTimers[categoryId] = timer;
+
+        if (newName != null)
+        {
+            if (timer.Name == null)
+                timer.Tick += (sender, _) => UpdateCategoryNameCallback((CategoryUpdateTimer)sender);
+            timer.Name = newName;
+        }
+
+        if (newOrder != -1)
+        {
+            foreach (var existingOrderUpdateTimer in CategoryUpdateTimers.Values)
+                if (existingOrderUpdateTimer != timer && existingOrderUpdateTimer.Order != -1)
+                    ForceFinishTimer(existingOrderUpdateTimer);
+
+            if (timer.Order == -1)
+                timer.Tick += (sender, _) => UpdateCategoryOrderCallback((CategoryUpdateTimer)sender);
+            timer.Order = newOrder;
+        }
 
         timer.Start();
 
-        CategoryUpdateTimers[category.Id] = timer;
     }
 
     private NoteUpdateTimer GetOrCreateNoteTimer(long noteId)
@@ -496,17 +528,75 @@ public partial class MainWindow : Avalonia.Controls.Window
         return timer;
     }
 
+    private void ForceFinishTimer(NoteUpdateTimer noteTimer)
+    {
+        if (noteTimer == null)
+            return;
+
+        if (noteTimer.Text != null)
+            UpdateNoteTextCallback(noteTimer);
+
+        if (noteTimer.Order != -1)
+            UpdateNoteOrderCallback(noteTimer);
+    }
+
+    private void ForceFinishTimer(CategoryUpdateTimer categoryTimer)
+    {
+        if (categoryTimer == null)
+            return;
+
+        if (categoryTimer.Name != null)
+            UpdateCategoryNameCallback(categoryTimer);
+
+        if (categoryTimer.Order != -1)
+            UpdateCategoryOrderCallback(categoryTimer);
+    }
+
     private void UpdateNoteTextCallback(NoteUpdateTimer timer)
     {
+        if (!timer.IsEnabled || timer.Text == null)
+            return;
+
         if (!controller.SetNoteText(timer.Id, timer.Text))
-            throw new Exception($"Failed to update note Id={timer.Id}.");
+            throw new Exception($"Failed to update text for note Id={timer.Id}.");
+
+        timer.Text = null;
+        timer.Stop();
+    }
+    
+    private void UpdateNoteOrderCallback(NoteUpdateTimer timer)
+    {
+        if (!timer.IsEnabled || timer.Order == -1)
+            return;
+
+        if (!controller.ReorderNote(timer.Id, timer.Order))
+            throw new Exception($"Failed to update order for note Id={timer.Id}.");
+
+        timer.Order = -1;
         timer.Stop();
     }
 
     private void UpdateCategoryNameCallback(CategoryUpdateTimer timer)
     {
+        if (!timer.IsEnabled || timer.Name == null)
+            return;
+
         if (!controller.SetCategoryName(timer.Id, timer.Name))
-            throw new Exception($"Failed to update category Id={timer.Id}.");
+            throw new Exception($"Failed to update name for category Id={timer.Id}.");
+
+        timer.Name = null;
+        timer.Stop();
+    }
+    
+    private void UpdateCategoryOrderCallback(CategoryUpdateTimer timer)
+    {
+        if (!timer.IsEnabled || timer.Order == -1)
+            return;
+
+        if (!controller.ReorderCategory(timer.Id, timer.Order))
+            throw new Exception($"Failed to update order for category Id={timer.Id}.");
+
+        timer.Order = -1;
         timer.Stop();
     }
 
