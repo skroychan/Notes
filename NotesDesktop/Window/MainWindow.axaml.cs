@@ -280,7 +280,6 @@ public partial class MainWindow : Avalonia.Controls.Window
             return;
 
         StartNoteUpdateTimer(SelectedNote.Id, SelectedNote.Text);
-        SelectedNote.ModificationDate = DateTime.Now;
     }
 
     private void NoteTextBoxSelected(object sender, FocusChangedEventArgs e)
@@ -446,6 +445,9 @@ public partial class MainWindow : Avalonia.Controls.Window
         else
             NoteUpdateTimers[noteId] = timer;
 
+        if (newText == controller.GetNote(noteId).Text || newOrder == controller.GetNote(noteId).Order)
+            return;
+
         if (newText != null)
         {
             if (timer.Text == null)
@@ -477,6 +479,9 @@ public partial class MainWindow : Avalonia.Controls.Window
             timer.Stop();
         else
             CategoryUpdateTimers[categoryId] = timer;
+
+        if (newName == controller.GetCategory(categoryId).Name || newOrder == controller.GetCategory(categoryId).Order)
+            return;
 
         if (newName != null)
         {
@@ -559,6 +564,7 @@ public partial class MainWindow : Avalonia.Controls.Window
 
         if (!controller.SetNoteText(timer.Id, timer.Text))
             throw new Exception($"Failed to update text for note Id={timer.Id}.");
+        SelectedNote.ModificationDate = DateTime.Now;
 
         timer.Text = null;
         timer.Stop();

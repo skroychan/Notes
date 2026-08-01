@@ -42,6 +42,16 @@ public class NoteController
         return SortByOrder(NoteService.GetAll()).Select(ToModel);
     }
 
+    public NoteModel GetNote(long noteId)
+    {
+        return ToModel(NoteService.GetNote(noteId));
+    }
+
+    public CategoryModel GetCategory(long categoryId)
+    {
+        return ToModel(NoteService.GetCategory(categoryId));
+    }
+
     public IEnumerable<CategoryModel> Search(string query)
     {
         return SortByOrder(NoteService.Search(query)).Select(ToModel);

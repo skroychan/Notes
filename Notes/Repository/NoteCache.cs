@@ -26,28 +26,22 @@ internal class NoteCache
 
 	public IEnumerable<Category> GetAll()
 	{
-		return CategoriesCache.Values.Select(GetCopy);
+		return CategoriesCache.Values;
 	}
 
 	public IEnumerable<Storage> GetStorages()
 	{
-		return StoragesCache.Values.Select(GetCopy);
+		return StoragesCache.Values;
 	}
 
 	public Category GetCategory(long categoryId)
 	{
-		if (CategoriesCache.TryGetValue(categoryId, out var category))
-			return GetCopy(category);
-
-		return null;
+		return CategoriesCache.GetValueOrDefault(categoryId);
 	}
 
 	public Note GetNote(long noteId)
 	{
-		if (NotesCache.TryGetValue(noteId, out var note))
-			return GetCopy(note);
-
-		return null;
+		return NotesCache.GetValueOrDefault(noteId);
 	}
 
 	public void AddNote(Note note)
@@ -55,19 +49,18 @@ internal class NoteCache
 		if (!CategoriesCache.TryGetValue(note.CategoryId, out Category category))
 			throw new ArgumentException($"Note with Id={note.Id} references category with Id={note.CategoryId} which does not exist.");
 
-		var newNote = GetCopy(note);
-		NotesCache[note.Id] = newNote;
-		category.Notes.Add(newNote);
+		NotesCache[note.Id] = note;
+		category.Notes.Add(note);
 	}
 
 	public void AddCategory(Category category)
 	{
-		CategoriesCache[category.Id] = GetCopy(category);
+		CategoriesCache[category.Id] = category;
 	}
 
 	public void AddStorage(Storage storage)
 	{
-		StoragesCache[storage.Id] = GetCopy(storage);
+		StoragesCache[storage.Id] = storage;
 	}
 
 	public void UpdateNote(Note note)
@@ -76,20 +69,19 @@ internal class NoteCache
 			throw new ArgumentException($"Cannot find note with Id={note.Id}.");
 
 		var oldCategory = CategoriesCache[oldNote.CategoryId];
-		var newNote = GetCopy(note);
 		var oldNoteIndex = oldCategory.Notes.FindIndex(x => x.Id == oldNote.Id);
 		if (note.CategoryId == oldNote.CategoryId)
-			oldCategory.Notes[oldNoteIndex] = newNote;
+			oldCategory.Notes[oldNoteIndex] = note;
 		else
 		{
-			if (!CategoriesCache.TryGetValue(note.CategoryId, out Category newCategory))
+			if (!CategoriesCache.TryGetValue(note.CategoryId, out var newCategory))
 				throw new ArgumentException($"Note with Id={note.Id} references category with Id={note.CategoryId} which does not exist.");
 
 			oldCategory.Notes.RemoveAt(oldNoteIndex);
-			newCategory.Notes.Add(newNote);
+			newCategory.Notes.Add(note);
 		}
 
-		NotesCache[note.Id] = newNote;
+		NotesCache[note.Id] = note;
 	}
 
 	public void UpdateCategory(Category category)
@@ -97,7 +89,7 @@ internal class NoteCache
 		if (!CategoriesCache.ContainsKey(category.Id))
 			throw new ArgumentException($"Cannot find category with Id={category.Id}.");
 
-		CategoriesCache[category.Id] = GetCopy(category);
+		CategoriesCache[category.Id] = category;
 	}
 
 	public void DeleteNote(long noteId)
@@ -124,44 +116,5 @@ internal class NoteCache
 
 		if (!CategoriesCache.Remove(categoryId))
 			throw new Exception($"Failed to remove category with Id={categoryId}.");
-	}
-
-
-	private Note GetCopy(Note note)
-	{
-		return new Note
-		{
-			Id = note.Id,
-			Text = note.Text,
-			Color = note.Color,
-			CategoryId = note.CategoryId,
-			StorageId = note.StorageId,
-			Order = note.Order,
-			CreationDate = note.CreationDate,
-			ModificationDate = note.ModificationDate,
-			ArchiveDate = note.ArchiveDate
-		};
-	}
-
-	private Category GetCopy(Category category)
-	{
-		return new Category
-		{
-			Id = category.Id,
-			Name = category.Name,
-			Notes = category.Notes.Select(GetCopy).ToList(),
-			Color = category.Color,
-			Order = category.Order,
-			CreationDate = category.CreationDate
-		};
-	}
-
-	private Storage GetCopy(Storage storage)
-	{
-		return new Storage
-		{
-			Id = storage.Id,
-			Name = storage.Name
-		};
 	}
 }

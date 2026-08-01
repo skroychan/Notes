@@ -88,6 +88,16 @@ public class NoteService
 		return repository.GetAllStorages();
 	}
 
+	public Note GetNote(long noteId)
+	{
+		return repository.GetNote(noteId);
+	}
+
+	public Category GetCategory(long categoryId)
+	{
+		return repository.GetCategory(categoryId);
+	}
+
 	public IEnumerable<Category> Search(string query)
 	{
 		return GetAll()
@@ -140,6 +150,9 @@ public class NoteService
 		if (newPosition < 0)
 			return false;
 
+		if (GetCategory(categoryId)?.Order == newPosition)
+			return true;
+
 		var result = true;
 		var category = repository.GetCategory(categoryId);
 		var categories = repository.GetAll().ToList();
@@ -174,6 +187,9 @@ public class NoteService
 		if (newPosition < 0)
 			return false;
 
+		if (GetNote(noteId)?.Order == newPosition)
+			return true;
+
 		var result = true;
 		var note = repository.GetNote(noteId);
 		if (note.Order == newPosition)
@@ -200,6 +216,9 @@ public class NoteService
 
 	public bool SetNoteCategory(long noteId, long toCategoryId)
 	{
+		if (GetNote(noteId)?.CategoryId == toCategoryId)
+			return true;
+
 		var result = true;
 		var note = repository.GetNote(noteId);
 		var oldCategory = repository.GetCategory(note.CategoryId);
@@ -220,6 +239,9 @@ public class NoteService
 
 	public bool SetNoteText(long noteId, string newText)
 	{
+		if (GetNote(noteId)?.Text == newText)
+			return true;
+
 		return repository.UpdateNote(noteId, _ => new Note
 		{
 			Text = newText,
@@ -229,6 +251,9 @@ public class NoteService
 
 	public bool SetNoteColor(long noteId, string hexColor)
 	{
+		if (GetNote(noteId)?.Color == hexColor)
+			return true;
+
 		return repository.UpdateNote(noteId, _ => new Note
 		{
 			Color = hexColor
@@ -237,6 +262,9 @@ public class NoteService
 
 	public bool SetNoteStorage(long noteId, string targetStorage)
 	{
+		if (GetNote(noteId)?.StorageId == CurrentStorageId)
+			return true;
+
 		var result = true;
 		var targetStorageId = GetStorageIdByName(targetStorage);
 		var note = repository.GetNote(noteId);
@@ -258,6 +286,9 @@ public class NoteService
 
 	public bool SetCategoryName(long categoryId, string newName)
 	{
+		if (GetCategory(categoryId)?.Name == newName)
+			return true;
+
 		return repository.UpdateCategory(categoryId, _ => new Category
 		{
 			Name = newName
@@ -266,6 +297,9 @@ public class NoteService
 
 	public bool SetCategoryColor(long categoryId, string hexColor)
 	{
+		if (GetCategory(categoryId)?.Color == hexColor)
+			return true;
+
 		return repository.UpdateCategory(categoryId, _ => new Category
 		{
 			Color = hexColor

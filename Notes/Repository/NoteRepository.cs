@@ -41,7 +41,7 @@ internal class NoteRepository
 
 	public bool CreateNote(Note note)
 	{
-		if (cache.GetCategory(note.CategoryId) == null)
+		if (GetCategory(note.CategoryId) == null)
 			return false;
 
 		note.Id = (long)database.Insert(note);
@@ -91,10 +91,10 @@ internal class NoteRepository
 
 	public bool UpdateNote(long noteId, Expression<Action<Note>> updater)
 	{
-		var note = cache.GetNote(noteId);
+		var note = GetNote(noteId);
 		ApplyUpdater(note, updater);
 
-		if (cache.GetCategory(note.CategoryId) == null)
+		if (GetCategory(note.CategoryId) == null)
 			return false;
 
 		var affectedRows = database.Update(note, updater);
