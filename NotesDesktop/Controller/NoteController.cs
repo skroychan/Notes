@@ -19,7 +19,7 @@ public class NoteController
     {
         NoteService = new NoteService();
 
-        var missingStorages = Enum.GetNames(typeof(NoteStorage)).Except(NoteService.GetAllStorages().Select(x => x.Name));
+        var missingStorages = Enum.GetNames<NoteStorage>().Except(NoteService.GetAllStorages().Select(x => x.Name));
         foreach (var storage in missingStorages)
             NoteService.CreateStorage(storage);
 
@@ -84,7 +84,8 @@ public class NoteController
 
     public bool SetNoteText(long noteId, string newText)
     {
-        return NoteService.SetNoteText(noteId, newText);
+        return NoteService.SetNoteText(noteId, newText)
+               && NoteService.SetNoteModificationDate(noteId, DateTime.Now);
     }
 
     public bool SetNoteColor(long noteId, Color color)
@@ -104,7 +105,17 @@ public class NoteController
 
     public bool ChangeNoteStorage(long noteId, NoteStorage targetStorage)
     {
-        return NoteService.SetNoteStorage(noteId, targetStorage.ToString());
+        var result = NoteService.SetNoteStorage(noteId, targetStorage.ToString());
+        switch (targetStorage)
+        {
+            case NoteStorage.Archive:
+                result &= NoteService.SetNoteArchiveDate(noteId, DateTime.Now);
+                break;
+            case NoteStorage.Main:
+                result &= NoteService.SetNoteArchiveDate(noteId, null);
+                break;
+        }
+        return result;
     }
 
     public void SetStorage(NoteStorage storage)

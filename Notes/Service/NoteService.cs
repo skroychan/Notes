@@ -69,18 +69,28 @@ public class NoteService
 
 	public IEnumerable<Category> GetAll()
 	{
-		var categories = repository.GetAll().ToList();
-		for (var i = 0; i < categories.Count; i++)
+		var result = new List<Category>();
+		foreach (var category in repository.GetAll())
 		{
-			if (categories[i].Notes.Count == 0)
+			if (category.Notes.Count == 0)
 				continue;
 
-			categories[i].Notes = categories[i].Notes.FindAll(note => note.StorageId == CurrentStorageId);
-			if (categories[i].Notes.Count == 0)
-				categories.Remove(categories[i--]);
+			var resultNotes = category.Notes.FindAll(note => note.StorageId == CurrentStorageId);
+			if (resultNotes.Count == 0)
+				continue;
+
+			result.Add(new Category
+			{
+				Id = category.Id,
+				Name = category.Name,
+				Notes = resultNotes,
+				Color = category.Color,
+				Order = category.Order,
+				CreationDate = category.CreationDate
+			});
 		}
 
-		return categories;
+		return result;
 	}
 
 	public IEnumerable<Storage> GetAllStorages()
@@ -244,8 +254,7 @@ public class NoteService
 
 		return repository.UpdateNote(noteId, _ => new Note
 		{
-			Text = newText,
-			ModificationDate = DateTime.Now
+			Text = newText
 		});
 	}
 
@@ -262,11 +271,11 @@ public class NoteService
 
 	public bool SetNoteStorage(long noteId, string targetStorage)
 	{
-		if (GetNote(noteId)?.StorageId == CurrentStorageId)
-			return true;
-
 		var result = true;
 		var targetStorageId = GetStorageIdByName(targetStorage);
+		if (GetNote(noteId)?.StorageId == targetStorageId)
+			return true;
+ 
 		var note = repository.GetNote(noteId);
 		var category = repository.GetCategory(note.CategoryId);
 		var oldOrder = note.Order;
@@ -278,10 +287,27 @@ public class NoteService
 			Order = newOrder
 		});
 
-		foreach (var otherNote in category.Notes.Where(x => x.StorageId == CurrentStorageId && x.Order > oldOrder))
+		var notesToReorder = category.Notes.Where(x => x.StorageId == CurrentStorageId && x.Order > oldOrder).ToList();
+		foreach (var otherNote in notesToReorder)
 			result &= repository.UpdateNote(otherNote.Id, _ => new Note { Order = otherNote.Order - 1 });
 
 		return result;
+	}
+
+	public bool SetNoteModificationDate(long noteId, DateTime? modificationDate)
+	{
+		return repository.UpdateNote(noteId, _ => new Note
+		{
+			ModificationDate = modificationDate
+		});
+	}
+
+	public bool SetNoteArchiveDate(long noteId, DateTime? archiveDate)
+	{
+		return repository.UpdateNote(noteId, _ => new Note
+		{
+			ArchiveDate = archiveDate
+		});
 	}
 
 	public bool SetCategoryName(long categoryId, string newName)

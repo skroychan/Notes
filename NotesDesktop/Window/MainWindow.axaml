@@ -93,7 +93,7 @@
 								<Setter Property="BorderBrush" Value="LightGray"/>
 								<Setter Property="BorderThickness" Value="0,0,0,1"/>
 								<Style Selector="^:pointerover /template/ Border#PART_Border, ^:selected /template/ Border#PART_Border">
-									<Setter Property="Background" Value="#eee"/>
+									<Setter Property="Background" Value="#f3f3f3"/>
 									<Setter Property="BorderBrush" Value="Gray"/>
 								</Style>
 								<Setter Property="Template">
@@ -166,6 +166,7 @@
 				<MultiBinding Converter="{x:Static local:Converters.JoinLines}">
 					<Binding Path="SelectedNote.CreationDate" StringFormat="Created: {0}" TargetNullValue=""/>
 					<Binding Path="SelectedNote.ModificationDate" StringFormat="Edited: {0}" TargetNullValue=""/>
+					<Binding Path="SelectedNote.ArchiveDate" StringFormat="Archived: {0}" TargetNullValue=""/>
 				</MultiBinding>
 			</ToolTip.Tip>
 		</Label>

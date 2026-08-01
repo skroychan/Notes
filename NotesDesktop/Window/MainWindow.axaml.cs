@@ -502,7 +502,6 @@ public partial class MainWindow : Avalonia.Controls.Window
         }
 
         timer.Start();
-
     }
 
     private NoteUpdateTimer GetOrCreateNoteTimer(long noteId)
@@ -564,7 +563,6 @@ public partial class MainWindow : Avalonia.Controls.Window
 
         if (!controller.SetNoteText(timer.Id, timer.Text))
             throw new Exception($"Failed to update text for note Id={timer.Id}.");
-        SelectedNote.ModificationDate = DateTime.Now;
 
         timer.Text = null;
         timer.Stop();
