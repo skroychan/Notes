@@ -133,8 +133,8 @@ public class NoteService
 		if (!result)
 			return false;
 
-		foreach (var cat in repository.GetAll().Where(x => x.Order > category.Order))
-			result &= repository.UpdateCategory(cat.Id, _ => new Category { Order = cat.Order - 1 });
+		foreach (var otherCategory in repository.GetAll().Where(x => x.Order > category.Order).ToList())
+			result &= repository.UpdateCategory(otherCategory.Id, _ => new Category { Order = otherCategory.Order - 1 });
 
 		return result;
 	}
@@ -149,7 +149,7 @@ public class NoteService
 		if (!result)
 			return false;
 
-		foreach (var otherNote in noteCategory.Notes.Where(x => x.Order > note.Order))
+		foreach (var otherNote in noteCategory.Notes.Where(x => x.Order > note.Order).ToList())
 			result &= repository.UpdateNote(otherNote.Id, _ => new Note { Order = otherNote.Order - 1 });
 
 		return result;
@@ -241,7 +241,8 @@ public class NoteService
 			Order = newOrder
 		});
 
-		foreach (var otherNote in oldCategory.Notes.Where(x => x.StorageId == CurrentStorageId && x.Order > oldOrder))
+		var notesToReorder = oldCategory.Notes.Where(x => x.StorageId == CurrentStorageId && x.Order > oldOrder).ToList();
+		foreach (var otherNote in notesToReorder)
 			result &= repository.UpdateNote(otherNote.Id, _ => new Note { Order = otherNote.Order - 1 });
 
 		return result;

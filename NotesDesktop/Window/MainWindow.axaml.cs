@@ -354,9 +354,6 @@ public partial class MainWindow : Avalonia.Controls.Window
 
         StartCategoryUpdateTimer(SelectedCategory.Id, newOrder: newPosition);
 
-        if (!controller.ReorderCategory(SelectedCategory.Id, newPosition))
-            throw new Exception($"Failed to reorder category to position={newPosition}.");
-
         Categories.Move(TabControl.SelectedIndex, newPosition);
         TabControl.SelectedIndex = newPosition;
     }
@@ -370,9 +367,6 @@ public partial class MainWindow : Avalonia.Controls.Window
             return;
 
         StartNoteUpdateTimer(SelectedNote.Id, newOrder: newPosition);
-
-        if (!controller.ReorderNote(SelectedNote.Id, newPosition))
-            throw new Exception($"Failed to reorder note to position={newPosition}.");
 
         SelectedCategory.Notes.Move(SelectedCategory.Notes.IndexOf(SelectedNote), newPosition);
 
@@ -442,11 +436,12 @@ public partial class MainWindow : Avalonia.Controls.Window
         var timer = GetOrCreateNoteTimer(noteId);
         if (timer.IsEnabled)
             timer.Stop();
-        else
-            NoteUpdateTimers[noteId] = timer;
 
         if (newText == controller.GetNote(noteId).Text || newOrder == controller.GetNote(noteId).Order)
             return;
+
+        if (!timer.IsEnabled)
+            NoteUpdateTimers[noteId] = timer;
 
         if (newText != null)
         {
@@ -477,11 +472,12 @@ public partial class MainWindow : Avalonia.Controls.Window
         var timer = GetOrCreateCategoryTimer(categoryId);
         if (timer.IsEnabled)
             timer.Stop();
-        else
-            CategoryUpdateTimers[categoryId] = timer;
 
         if (newName == controller.GetCategory(categoryId).Name || newOrder == controller.GetCategory(categoryId).Order)
             return;
+
+        if (!timer.IsEnabled)
+            CategoryUpdateTimers[categoryId] = timer;
 
         if (newName != null)
         {

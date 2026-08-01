@@ -92,7 +92,6 @@ internal class NoteRepository
 	public bool UpdateNote(long noteId, Expression<Action<Note>> updater)
 	{
 		var note = GetNote(noteId);
-		ApplyUpdater(note, updater);
 
 		if (GetCategory(note.CategoryId) == null)
 			return false;
@@ -101,6 +100,7 @@ internal class NoteRepository
 		if (affectedRows != 1)
 			return false;
 
+		ApplyUpdater(note, updater);
 		cache.UpdateNote(note);
 
 		return true;
@@ -109,12 +109,12 @@ internal class NoteRepository
 	public bool UpdateCategory(long categoryId, Expression<Action<Category>> updater)
 	{
 		var category = GetCategory(categoryId);
-		ApplyUpdater(category, updater);
 
 		var affectedRows = database.Update(category, updater);
 		if (affectedRows != 1)
 			return false;
 
+		ApplyUpdater(category, updater);
 		cache.UpdateCategory(category);
 
 		return true;
