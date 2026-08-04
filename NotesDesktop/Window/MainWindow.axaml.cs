@@ -51,6 +51,17 @@ public partial class MainWindow : Avalonia.Controls.Window
 
         InitializeComponent();
 
+        InitializeControls();
+    }
+
+    private void InitializeControls()
+    {
+        // workaround for RepeatButton losing focus 
+        MoveNoteUp.AddHandler(PointerReleasedEvent, MoveNotePointerReleased, handledEventsToo: true);
+        MoveNoteDown.AddHandler(PointerReleasedEvent, MoveNotePointerReleased, handledEventsToo: true);
+        MoveNoteTop.AddHandler(PointerReleasedEvent, MoveNotePointerReleased, handledEventsToo: true);
+        MoveNoteBottom.AddHandler(PointerReleasedEvent, MoveNotePointerReleased, handledEventsToo: true);
+
         UpdateWindowTitle();
     }
 
@@ -122,7 +133,6 @@ public partial class MainWindow : Avalonia.Controls.Window
         SelectedCategory.Notes.Insert(newIndex, newNote);
 
         UpdateWindowTitle();
-        ListBox.UpdateLayout();
         FocusOnNote(newIndex);
     }
 
@@ -303,6 +313,7 @@ public partial class MainWindow : Avalonia.Controls.Window
 
     private void FocusOnNote(int noteIndex)
     {
+        ListBox.UpdateLayout();
         ListBox.ScrollIntoView(noteIndex);
         var container = ListBox.ContainerFromIndex(noteIndex) as ListBoxItem;
         var textBox = container?.GetVisualDescendants().OfType<TextBox>().FirstOrDefault();
@@ -371,7 +382,11 @@ public partial class MainWindow : Avalonia.Controls.Window
         SelectedCategory.Notes.Move(SelectedCategory.Notes.IndexOf(SelectedNote), newPosition);
 
         ListBox.SelectedIndex = newPosition;
-        FocusOnNote(newPosition);
+    }
+
+    private void MoveNotePointerReleased(object sender, PointerReleasedEventArgs e)
+    {
+        FocusOnNote(ListBox.SelectedIndex);
     }
 
     private void ChangeNoteStorage(NoteStorage targetStorage)
