@@ -100,8 +100,9 @@ internal class NoteRepository
 		if (affectedRows != 1)
 			return false;
 
+		var categoryId = note.CategoryId;
 		ApplyUpdater(note, updater);
-		cache.UpdateNote(note);
+		cache.UpdateNote(note, categoryId);
 
 		return true;
 	}
