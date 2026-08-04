@@ -32,4 +32,7 @@ public partial class NoteModel : ObservableObject
 
     [ObservableProperty]
     public partial DateTime? ArchiveDate { get; set; }
+
+
+    public override string ToString() => $"[{Id}] {Text}";
 }

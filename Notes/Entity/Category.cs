@@ -11,4 +11,6 @@ public class Category
 	public string Color { get; set; }
 	public int Order { get; set; }
 	public DateTime? CreationDate { get; set; }
+
+	public override string ToString() => $"[{Id}] {Name}";
 }

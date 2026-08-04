@@ -13,4 +13,6 @@ public class Note
 	public DateTime? CreationDate { get; set; }
     public DateTime? ModificationDate { get; set; }
     public DateTime? ArchiveDate { get; set; }
+
+    public override string ToString() => $"[{Id}] {Text}";
 }

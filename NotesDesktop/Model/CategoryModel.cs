@@ -24,4 +24,7 @@ public partial class CategoryModel : ObservableObject
 
     [ObservableProperty]
     public partial DateTime? CreationDate { get; set; }
+
+
+    public override string ToString() => $"[{Id}] {Name}";
 }
